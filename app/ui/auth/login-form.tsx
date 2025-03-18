@@ -24,7 +24,7 @@ export default function LoginForm() {
       document.cookie = `token=${session.accessToken}; path=/`;
 
       // Redirect
-      router.push("/dashboard");
+      router.push("/");
     } catch (error) {
       console.log(error);
     }

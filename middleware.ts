@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// const publicRoutes = ["/login"];
+const publicRoutes = ["/login"];
 // const privateRoutes = ["/dashboard"];
 
 export function middleware({ nextUrl, cookies, url }: NextRequest) {
   const token = cookies.get("token")?.value;
-  const isLoginPage = nextUrl.pathname.startsWith("/login");
+  const isPublicPage = publicRoutes.some((page) =>
+    nextUrl.pathname.startsWith(page)
+  );
 
-  if (!token && !isLoginPage) {
+  if (!token && !isPublicPage) {
     return NextResponse.redirect(new URL("/login", url));
   }
 
