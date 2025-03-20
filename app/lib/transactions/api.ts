@@ -9,8 +9,16 @@ export const transactionsApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    createTransaction: builder.mutation<{ id: string }, Partial<Transaction>>({
+      query: (params) => ({
+        url: `/transactions`,
+        method: "POST",
+        body: params,
+      }),
+    }),
   }),
   overrideExisting: false, // It's better to keep this false unless overriding
 });
 
-export const { useGetTransactionsQuery } = transactionsApi;
+export const { useGetTransactionsQuery, useCreateTransactionMutation } =
+  transactionsApi;

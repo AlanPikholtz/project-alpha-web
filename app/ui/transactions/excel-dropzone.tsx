@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
-import { Transaction } from "../lib/transactions/types";
+import { Transaction } from "../../lib/transactions/types";
 
 export default function ExcelDropzone({
   onFileRead,
