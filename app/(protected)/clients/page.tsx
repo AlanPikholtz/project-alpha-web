@@ -4,7 +4,7 @@ import { useGetClientsQuery } from "@/app/lib/clients/api";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-export default function Clients() {
+export default function ClientsPage() {
   const router = useRouter();
   const { data, error, isLoading } = useGetClientsQuery();
 

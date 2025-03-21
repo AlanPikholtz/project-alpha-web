@@ -1,14 +1,14 @@
 "use client";
 
-import { useDispatch } from "react-redux";
 import NavLinks from "./nav-links";
-import { clearSession } from "@/app/lib/auth/authSlice";
+import { clearSessionData } from "@/app/lib/auth/authSlice";
+import { useAppDispatch } from "@/app/lib/store/hooks";
 
 export default function SideNav() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleSignOut = () => {
-    dispatch(clearSession());
+    dispatch(clearSessionData());
   };
 
   return (

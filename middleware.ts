@@ -9,6 +9,12 @@ export function middleware({ nextUrl, cookies, url }: NextRequest) {
     nextUrl.pathname.startsWith(page)
   );
 
+  // If user is on "/login" with a valid token, redirect to home
+  if (token && nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/", url));
+  }
+
+  // If no token & not on a public page, redirect to login
   if (!token && !isPublicPage) {
     return NextResponse.redirect(new URL("/login", url));
   }

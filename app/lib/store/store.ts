@@ -13,36 +13,17 @@ const persistConfig = {
 
 // Combine Reducers
 const rootReducer = combineReducers({
-  auth: authReducer,
+  auth: authReducer.reducer,
   [api.reducerPath]: api.reducer,
 });
 
 // Wrap Reducer with Persist
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// const authMiddleware: Middleware = (store) => (next) => (action) => {
-//   const state = store.getState();
-//   const token = state.auth?.token;
-
-//   if (!token) {
-//     console.warn("Blocked action: User not authenticated");
-
-//     // Prevent infinite loops by only clearing once
-//     if (action.type !== "auth/clearSession") {
-//       store.dispatch(clearSession());
-//     }
-
-//     return; // Stop further execution
-//   }
-
-//   return next(action);
-// };
-
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }).concat(api.middleware),
-  // .concat(authMiddleware),
 });
 
 export const persistor = persistStore(store);

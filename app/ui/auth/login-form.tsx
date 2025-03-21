@@ -1,12 +1,12 @@
 "use client";
 
-import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useAuthenticateMutation } from "@/app/lib/auth/api";
-import { setSession } from "@/app/lib/auth/authSlice";
+import { saveSessionData } from "@/app/lib/auth/authSlice";
+import { useAppDispatch } from "@/app/lib/store/hooks";
 
 export default function LoginForm() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
 
   const [authenticate, { isLoading }] = useAuthenticateMutation();
@@ -16,12 +16,8 @@ export default function LoginForm() {
       const email = data.get("email") as string;
       const password = data.get("password") as string;
 
-      console.log(email, password);
-
       const session = await authenticate({ email, password }).unwrap();
-      dispatch(setSession(session));
-      // Save cookie for middleware
-      document.cookie = `token=${session.accessToken}; path=/`;
+      dispatch(saveSessionData(session));
 
       // Redirect
       router.push("/");
