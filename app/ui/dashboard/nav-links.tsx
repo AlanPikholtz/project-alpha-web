@@ -9,17 +9,17 @@ import { usePathname } from "next/navigation";
 const links = [
   {
     name: "Home",
-    href: "/dashboard",
+    href: "/",
     // icon: HomeIcon
   },
   {
-    name: "Invoices",
-    href: "/dashboard/invoices",
+    name: "Transacciones",
+    href: "/transactions",
     // icon: DocumentDuplicateIcon,
   },
   {
-    name: "Customers",
-    href: "/dashboard/customers",
+    name: "Clientes",
+    href: "/clients",
     // icon: UserGroupIcon
   },
 ];
