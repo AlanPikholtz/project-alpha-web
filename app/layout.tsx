@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} antialiased`}>
         <Provider store={store}>
-          <PersistGate loading={<div>Loading</div>} persistor={persistor}>
+          <PersistGate loading={null} persistor={persistor}>
             {children}
           </PersistGate>
         </Provider>

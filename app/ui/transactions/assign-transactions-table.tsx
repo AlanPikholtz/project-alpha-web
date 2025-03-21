@@ -6,6 +6,7 @@ import { useCreateTransactionMutation } from "@/app/lib/transactions/api";
 import { Transaction } from "@/app/lib/transactions/types";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import React, { useMemo, useState } from "react";
+import LoadingSpinner from "../loading-spinner";
 
 function TransactionTableRow({
   transaction,
@@ -49,30 +50,33 @@ function TransactionTableRow({
       <td className="w-1/4">{createdAt}</td>
       <td className="w-1/4">{type}</td>
       <td className="w-1/4">{amount}</td>
-      <td className="w-1/4 text-center">
-        {clientId ? client : null}
-        {!clientId ? (
-          <Menu as="div" className="relative inline-block text-left">
-            <MenuButton className="px-4 py-2 bg-blue-500 text-white rounded">
-              Asignar cliente
-            </MenuButton>
-            <MenuItems
-              as="div"
-              className="absolute mt-2 w-48 p-2 bg-white border rounded shadow-lg z-10"
-            >
-              {clients.map((x) => (
-                <MenuItem key={x.id} as="div">
-                  <button
-                    className="px-4 py-2 w-full text-left hover:bg-gray-200"
-                    onClick={() => handleAssignUser(x.id)}
-                  >
-                    {x.name}
-                  </button>
-                </MenuItem>
-              ))}
-            </MenuItems>
-          </Menu>
-        ) : null}
+      <td className="w-1/4">
+        <div className="flex items-center justify-center">
+          {isLoading ? <LoadingSpinner /> : null}
+          {!isLoading && clientId ? client : null}
+          {!isLoading && !clientId ? (
+            <Menu as="div" className="relative inline-block text-left">
+              <MenuButton className="px-4 py-2 bg-blue-500 text-white rounded">
+                Asignar cliente
+              </MenuButton>
+              <MenuItems
+                as="div"
+                className="absolute mt-2 w-48 p-2 bg-white border rounded shadow-lg z-10"
+              >
+                {clients.map((x) => (
+                  <MenuItem key={x.id} as="div">
+                    <button
+                      className="px-4 py-2 w-full text-left hover:bg-gray-200"
+                      onClick={() => handleAssignUser(x.id)}
+                    >
+                      {x.name}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Menu>
+          ) : null}
+        </div>
       </td>
     </tr>
   );

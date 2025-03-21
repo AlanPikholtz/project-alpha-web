@@ -56,13 +56,12 @@ const baseQueryWithReauth: BaseQueryFn<
           ...extraOptions,
           noAuth: true,
         });
-        // console.log('Refresh result', refreshResult);
+
         if (refreshResult.data) {
           // Update the store with the new session data - note the AWAIT so it will be completed before we
           // try the query again
           const session = refreshResult.data as Session;
-          api.dispatch(saveSessionData(session));
-
+          await api.dispatch(saveSessionData(session));
           // retry the initial query
           result = await baseQuery(args, api, extraOptions);
         } else {
