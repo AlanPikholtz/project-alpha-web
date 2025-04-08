@@ -7,17 +7,18 @@ import { Transaction } from "@/app/lib/transactions/types";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import React, { useMemo, useState } from "react";
 import LoadingSpinner from "../loading-spinner";
+import { XMarkIcon } from "@heroicons/react/16/solid";
 
 function TransactionTableRow({
   transaction,
-  index, // This will be used for removing it from the table after saving that transaction
   clients,
+  onDelete,
   onTransactionSaved,
 }: {
   transaction: Partial<Transaction>;
-  index: number;
   clients: Client[];
-  onTransactionSaved: (index: number) => void;
+  onDelete: () => void;
+  onTransactionSaved: () => void;
 }) {
   const { type, amount, clientId, createdAt } = transaction;
 
@@ -39,7 +40,7 @@ function TransactionTableRow({
         clientId: userId,
       }).unwrap();
 
-      onTransactionSaved(index);
+      onTransactionSaved();
     } catch (e) {
       console.log(e);
     }
@@ -47,10 +48,15 @@ function TransactionTableRow({
 
   return (
     <tr>
-      <td className="w-1/4">{createdAt}</td>
-      <td className="w-1/4">{type}</td>
-      <td className="w-1/4">{amount}</td>
-      <td className="w-1/4">
+      <td>
+        <button className="cursor-pointer" onClick={onDelete}>
+          <XMarkIcon className="w-5 h-10 text-red-500" />
+        </button>
+      </td>
+      <td className="flex-1">{createdAt}</td>
+      <td className="flex-1">{type}</td>
+      <td className="flex-1">{amount}</td>
+      <td className="flex-1">
         <div className="flex items-center justify-center">
           {isLoading ? <LoadingSpinner /> : null}
           {!isLoading && clientId ? client : null}
@@ -96,8 +102,6 @@ export default function AssignTransactionsTable() {
       .split("\n")
       .map((row) => row.split("\t").map((cell) => cell.trim()));
 
-    console.log({ rows });
-
     const parsedTransactions: Partial<Transaction>[] = rows.map((row) => ({
       createdAt: row[0], // Keep as string
       type: row[1], // Chusmear esto
@@ -107,53 +111,51 @@ export default function AssignTransactionsTable() {
     setTableData(parsedTransactions);
   };
 
-  const handleTransactionSaved = (index: number) => {
+  const handleDelete = (index: number) => {
     const updatedData = [...tableData];
     updatedData.splice(index, 1);
     setTableData(updatedData);
   };
 
   return (
-    <div className="flex flex-col border rounded h-full border-black/10">
-      {tableData.length === 0 ? (
-        <textarea
-          className="h-full"
-          placeholder="Pegue las transacciones (maximo 100)"
-          onPaste={handlePaste}
-        />
-      ) : (
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <p>Filtros</p>
-            <input
-              placeholder="Monto"
-              value={amountFilter}
-              onChange={(e) => setAmountFilter(e.target.value)}
-            />
-          </div>
-          <table className="w-full border-separate border-spacing-y-2 border-spacing-x-4">
-            <tbody>
-              <tr>
-                <td className="w-1/4">Fecha</td>
-                <td className="w-1/4">Tipo</td>
-                <td className="w-1/4">Monto</td>
-                <td className="w-1/4 text-center">Cliente</td>
-              </tr>
-              {tableData
-                .filter((x) => x.amount?.toString().includes(amountFilter))
-                .map((row, i) => (
-                  <TransactionTableRow
-                    key={i}
-                    index={i}
-                    transaction={row}
-                    clients={clients || []}
-                    onTransactionSaved={handleTransactionSaved}
-                  />
-                ))}
-            </tbody>
-          </table>
+    <div className="flex rounded gap-x-4 h-full">
+      <textarea
+        className="h-full border flex-1"
+        placeholder="Pegue las transacciones (maximo 100)"
+        onPaste={handlePaste}
+      />
+      <div className="flex flex-1 flex-col gap-y-4 border p-4 rounded">
+        <div>
+          <p>Filtros</p>
+          <input
+            placeholder="Monto"
+            value={amountFilter}
+            onChange={(e) => setAmountFilter(e.target.value)}
+          />
         </div>
-      )}
+        <table className="flex overflow-y-auto border-separate border-spacing-y-2 border-spacing-x-4">
+          <tbody>
+            <tr>
+              <td />
+              <td className="flex-1">Fecha</td>
+              <td className="flex-1">Tipo</td>
+              <td className="flex-1">Monto</td>
+              <td className="flex-1 flex justify-center">Cliente</td>
+            </tr>
+            {tableData
+              .filter((x) => x.amount?.toString().includes(amountFilter))
+              .map((row, i) => (
+                <TransactionTableRow
+                  key={i}
+                  transaction={row}
+                  clients={clients || []}
+                  onDelete={() => handleDelete(i)}
+                  onTransactionSaved={() => handleDelete(i)}
+                />
+              ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

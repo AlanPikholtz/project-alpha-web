@@ -5,13 +5,13 @@ export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
     authenticate: builder.mutation<
       Session,
-      { email: string; password: string }
+      { username: string; password: string }
     >({
-      query: ({ email, password }) => ({
+      query: ({ username, password }) => ({
         url: "/auth/login",
         method: "POST",
         body: {
-          email,
+          username,
           password,
         },
       }),
