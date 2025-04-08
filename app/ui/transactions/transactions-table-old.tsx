@@ -88,7 +88,7 @@ function TransactionTableRow({
   );
 }
 
-export default function AssignTransactionsTable() {
+export default function AssignTransactionsTableOld() {
   const { data: clients } = useGetClientsQuery();
 
   const [tableData, setTableData] = useState<Partial<Transaction>[]>([]);
