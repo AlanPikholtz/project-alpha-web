@@ -20,7 +20,7 @@ const links = [
   },
   {
     name: "Transacciones",
-    href: "/transactions",
+    href: "/depositos",
     icon: DocumentDuplicateIcon,
   },
   {

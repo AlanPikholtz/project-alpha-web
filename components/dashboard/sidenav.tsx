@@ -1,8 +1,8 @@
 "use client";
 
 import NavLinks from "./nav-links";
-import { clearSessionData } from "@/app/lib/auth/authSlice";
-import { useAppDispatch } from "@/app/lib/store/hooks";
+import { clearSessionData } from "@/lib/auth/authSlice";
+import { useAppDispatch } from "@/lib/store/hooks";
 
 export default function SideNav() {
   const dispatch = useAppDispatch();
