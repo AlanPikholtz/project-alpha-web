@@ -1,12 +1,12 @@
 "use client";
 
-import { useGetTransactionsQuery } from "@/lib/transactions/api";
+import { useGetClientTransactionsQuery } from "@/lib/transactions/api";
 import React from "react";
 import { useParams } from "next/navigation";
 
 export default function ClientPage() {
   const { id } = useParams(); // Get the dynamic ID from the URL
-  const { data } = useGetTransactionsQuery({ id: id as string });
+  const { data } = useGetClientTransactionsQuery({ id: id as string });
 
   return (
     <div>
