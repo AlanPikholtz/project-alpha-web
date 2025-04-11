@@ -1,7 +1,7 @@
 "use client";
 
-import { Transaction } from "@/app/lib/transactions/types";
-import TransactionsTable from "@/app/ui/transactions/transactions-table";
+import { Transaction } from "@/lib/transactions/types";
+import TransactionsTable from "@/components/transactions/transactions-table";
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 

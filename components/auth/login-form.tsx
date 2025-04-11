@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuthenticateMutation } from "@/app/lib/auth/api";
-import { saveSessionData } from "@/app/lib/auth/authSlice";
-import { useAppDispatch } from "@/app/lib/store/hooks";
+import { useAuthenticateMutation } from "@/lib/auth/api";
+import { saveSessionData } from "@/lib/auth/authSlice";
+import { useAppDispatch } from "@/lib/store/hooks";
 
 export default function LoginForm() {
   const dispatch = useAppDispatch();

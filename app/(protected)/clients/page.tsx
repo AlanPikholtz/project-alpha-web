@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetClientsQuery } from "@/app/lib/clients/api";
+import { useGetClientsQuery } from "@/lib/clients/api";
 import { useRouter } from "next/navigation";
 import React from "react";
 

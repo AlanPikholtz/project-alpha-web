@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
+import { useGetTransactionsQuery } from "@/lib/transactions/api";
 import React from "react";
 import { useParams } from "next/navigation";
 
