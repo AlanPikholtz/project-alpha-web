@@ -63,8 +63,10 @@ function Button({
       disabled={loading || disabled}
       {...props}
     >
-      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {loading ? loadingText : children}
+      <span className="inline-flex items-center gap-2">
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading ? loadingText : children}
+      </span>
     </Comp>
   );
 }
