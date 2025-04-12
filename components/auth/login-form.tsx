@@ -4,6 +4,23 @@ import { useRouter } from "next/navigation";
 import { useAuthenticateMutation } from "@/lib/auth/api";
 import { saveSessionData } from "@/lib/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+const formSchema = z.object({
+  username: z.string().nonempty("Ingrese el nombre de usuario"),
+  password: z.string().nonempty("Ingrese la contraseña"),
+});
 
 export default function LoginForm() {
   const dispatch = useAppDispatch();
@@ -11,11 +28,19 @@ export default function LoginForm() {
 
   const [authenticate, { isLoading }] = useAuthenticateMutation();
 
-  const handleLogin = async (data: FormData) => {
-    try {
-      const username = data.get("username") as string;
-      const password = data.get("password") as string;
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
+  const onSubmit = async ({
+    username,
+    password,
+  }: z.infer<typeof formSchema>) => {
+    try {
       const session = await authenticate({
         username,
         password,
@@ -30,42 +55,39 @@ export default function LoginForm() {
   };
 
   return (
-    <form className="space-y-3" action={handleLogin}>
-      <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-        <div className="w-full">
-          <div>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                name="username"
-                placeholder="Enter your email address"
-                defaultValue={"alan.antar"}
-                required
-              />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                name="password"
-                type="password"
-                placeholder="Enter password"
-                required
-                minLength={6}
-                defaultValue={"Aluete100"}
-              />
-            </div>
-          </div>
-        </div>
-        {/* <input type="hidden" name="redirectTo" value={callbackUrl} /> */}
-        <button
-          className="mt-4 w-full text-white p-4 bg-black rounded"
-          disabled={isLoading}
-        >
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-y-2"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Usuario" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input placeholder="Contraseña" type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" loading={isLoading}>
           Ingresar
-        </button>
-      </div>
-    </form>
+        </Button>
+      </form>
+    </Form>
   );
 }
