@@ -1,28 +1,87 @@
 "use client";
 
-import NavLinks from "./nav-links";
 import { clearSessionData } from "@/lib/auth/authSlice";
 import { useAppDispatch } from "@/lib/store/hooks";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { ChevronUp, User2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+const menuItems = [
+  { title: "Totalitarias", url: "/" },
+  { title: "Depósitos", url: "/depositos" },
+  { title: "Pagos", url: "/pagos" },
+  { title: "Clientes", url: "/clientes" },
+];
 
 export default function SideNav() {
   const dispatch = useAppDispatch();
+  const pathname = usePathname();
 
   const handleSignOut = () => {
     dispatch(clearSessionData());
   };
 
   return (
-    <div className="flex h-full flex-col px-3 py-4 md:px-2">
-      <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
-        <NavLinks />
-        <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
-        <form action={handleSignOut}>
-          <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
-            {/* <PowerIcon className="w-6" /> */}
-            <div className="hidden md:block">Sign Out</div>
-          </button>
-        </form>
-      </div>
-    </div>
+    <Sidebar className="w-[162px]">
+      <SidebarHeader />
+      <SidebarContent className="px-2">
+        <SidebarMenu>
+          {menuItems.map((item) => {
+            const isActive = pathname === item.url;
+
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  className={cn(
+                    "rounded-md px-3 py-2 transition-colors",
+                    isActive
+                      ? "bg-neutral-900 text-white"
+                      : "hover:bg-neutral-200 text-black"
+                  )}
+                >
+                  <Link href={item.url}>{item.title}</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  <User2 /> Algun nombre xD
+                  <ChevronUp className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" className="flex w-full">
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <span>Cerrar Sesión</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
