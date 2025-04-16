@@ -38,7 +38,7 @@ export default function SideNav() {
   };
 
   return (
-    <Sidebar className="w-[162px]">
+    <Sidebar>
       <SidebarHeader />
       <SidebarContent className="px-2">
         <SidebarMenu>
