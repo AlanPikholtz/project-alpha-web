@@ -10,14 +10,14 @@ import {
 } from "@tanstack/react-table";
 
 import { Input } from "@/components/ui/input";
-import { Transaction } from "@/lib/transactions/types";
-import { useGetTransactionsQuery } from "@/lib/transactions/api";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "../../../components/ui/checkbox";
 
 import { DateRange } from "react-day-picker";
 import DateRangeFilter from "./filters/date-range-filter";
 import StatusFilter from "./filters/status-filter";
 import CustomTable from "../custom-table";
+import { Transaction } from "@/app/lib/transactions/types";
+import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 
 const columns: ColumnDef<Transaction>[] = [
   {

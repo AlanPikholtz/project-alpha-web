@@ -1,7 +1,5 @@
 "use client";
 
-import { useGetClientsQuery } from "@/lib/clients/api";
-import { Client } from "@/lib/clients/types";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,9 +9,11 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
-import { Input } from "../ui/input";
+import { Input } from "../../../components/ui/input";
 
 import CustomTable from "../custom-table";
+import { Client } from "@/app/lib/clients/types";
+import { useGetClientsQuery } from "@/app/lib/clients/api";
 
 const columns: ColumnDef<Client>[] = [
   {

@@ -1,10 +1,10 @@
 "use client";
 
-import TransactionsTable from "@/components/transactions/transactions-table";
+import TransactionsTable from "@/app/ui/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
-import AccountSelector from "@/components/account-selector";
+import AccountSelector from "@/app/ui/account-selector";
 
 export default function TransactionsPage() {
   return (

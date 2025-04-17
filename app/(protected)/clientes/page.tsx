@@ -1,6 +1,6 @@
 "use client";
 
-import ClientsTable from "@/components/clients/clients-table";
+import ClientsTable from "@/app/ui/clients/clients-table";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import { useRouter } from "next/navigation";

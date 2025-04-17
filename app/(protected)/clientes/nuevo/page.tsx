@@ -1,4 +1,4 @@
-import NewClientForm from "@/components/clients/new-client-form";
+import NewClientForm from "@/app/ui/clients/new-client-form";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/lib/store/hooks";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,13 +13,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "../ui/textarea";
-import { useCreateClientMutation } from "@/lib/clients/api";
+import { Textarea } from "../../../components/ui/textarea";
 import AccountSelector from "../account-selector";
+import { useCreateClientMutation } from "@/app/lib/clients/api";
+import { useAccountId } from "@/app/context/account-provider";
 
 const formSchema = z.object({
-  surname: z.string().nonempty("Ingrese el Apellido"),
-  name: z.string().nonempty("Ingrese el Nombre"),
+  lastName: z.string().nonempty("Ingrese el Apellido"),
+  firstName: z.string().nonempty("Ingrese el Nombre"),
   code: z.string().nonempty("Ingrese el Código"),
   balance: z.string().nonempty("Ingrese el Saldo"),
   commission: z.string().nonempty("Ingrese la comisión"),
@@ -29,14 +29,15 @@ const formSchema = z.object({
 export default function NewClientForm() {
   const router = useRouter();
 
-  const [createClient, { isLoading: loading, isError: error }] =
-    useCreateClientMutation();
+  const { selectedAccountId } = useAccountId();
+
+  const [createClient, { isLoading: loading }] = useCreateClientMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      surname: "",
-      name: "",
+      firstName: "",
+      lastName: "",
       code: "",
       balance: "",
       commission: "",
@@ -45,10 +46,11 @@ export default function NewClientForm() {
   });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    if (!selectedAccountId) return;
     try {
-      const session = await createClient({
+      await createClient({
+        accountId: selectedAccountId,
         ...data,
-        accountId: "",
       }).unwrap();
       // Redirect
       router.back();
@@ -69,7 +71,7 @@ export default function NewClientForm() {
           <div className="grid grid-cols-2 gap-x-4 gap-y-6">
             <FormField
               control={form.control}
-              name="surname"
+              name="lastName"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -81,7 +83,7 @@ export default function NewClientForm() {
             />
             <FormField
               control={form.control}
-              name="name"
+              name="firstName"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -149,7 +151,7 @@ export default function NewClientForm() {
           </div>
         </div>
         <div className="flex gap-3.5">
-          <Button type="submit" loading={false}>
+          <Button type="submit" loading={loading}>
             Guardar
           </Button>
           <Button variant="secondary" type="button" onClick={handleBack}>

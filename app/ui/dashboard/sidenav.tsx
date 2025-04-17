@@ -1,7 +1,5 @@
 "use client";
 
-import { clearSessionData } from "@/lib/auth/authSlice";
-import { useAppDispatch } from "@/lib/store/hooks";
 import {
   Sidebar,
   SidebarContent,
@@ -17,10 +15,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "../../../components/ui/dropdown-menu";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@/app/lib/store/hooks";
+import { clearSessionData } from "@/app/lib/auth/authSlice";
+import { cn } from "@/app/lib/utils";
 
 const menuItems = [
   { title: "Totalitarias", url: "/" },

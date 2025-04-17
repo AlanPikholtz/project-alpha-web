@@ -18,7 +18,7 @@ export const clientsApi = api
         },
         providesTags: ["Clients"],
       }),
-      createClient: builder.mutation<{ id: number }, Client>({
+      createClient: builder.mutation<{ id: number }, Partial<Client>>({
         query: ({
           firstName,
           lastName,
