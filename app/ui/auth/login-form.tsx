@@ -1,9 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuthenticateMutation } from "@/lib/auth/api";
-import { saveSessionData } from "@/lib/auth/authSlice";
-import { useAppDispatch } from "@/lib/store/hooks";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,6 +13,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAppDispatch } from "@/app/lib/store/hooks";
+import { useAuthenticateMutation } from "@/app/lib/auth/api";
+import { saveSessionData } from "@/app/lib/auth/authSlice";
 
 const formSchema = z.object({
   username: z.string().nonempty("Ingrese el nombre de usuario"),

@@ -1,7 +1,5 @@
 "use client";
 
-import { clearSessionData } from "@/lib/auth/authSlice";
-import { useAppDispatch } from "@/lib/store/hooks";
 import {
   Sidebar,
   SidebarContent,
@@ -11,16 +9,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { ChevronUp, User2 } from "lucide-react";
+import { ChevronUp, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "../../../components/ui/dropdown-menu";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@/app/lib/store/hooks";
+import { clearSessionData } from "@/app/lib/auth/authSlice";
+import { cn } from "@/app/lib/utils";
 
 const menuItems = [
   { title: "Totalitarias", url: "/" },
@@ -55,7 +55,9 @@ export default function SideNav() {
                       : "hover:bg-neutral-200 text-black"
                   )}
                 >
-                  <Link href={item.url}>{item.title}</Link>
+                  <Link className="w-full" href={item.url}>
+                    {item.title}
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
@@ -69,7 +71,7 @@ export default function SideNav() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> Algun nombre xD
+                  <Settings /> Configuracion
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

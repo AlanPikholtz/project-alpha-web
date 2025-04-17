@@ -1,4 +1,4 @@
-import LoginForm from "@/components/auth/login-form";
+import LoginForm from "@/app/ui/auth/login-form";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
 

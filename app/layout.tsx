@@ -3,8 +3,8 @@
 import { Geist } from "next/font/google";
 import "./ui/globals.css";
 import { Provider } from "react-redux";
-import { persistor, store } from "../lib/store/store";
 import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "./lib/store/store";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

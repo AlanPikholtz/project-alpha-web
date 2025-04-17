@@ -4,30 +4,20 @@ import React, { useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
 import { Input } from "@/components/ui/input";
-import { Transaction } from "@/lib/transactions/types";
-import { useGetTransactionsQuery } from "@/lib/transactions/api";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "../../../components/ui/checkbox";
 
-import { TablePagination } from "../table-pagination";
 import { DateRange } from "react-day-picker";
 import DateRangeFilter from "./filters/date-range-filter";
 import StatusFilter from "./filters/status-filter";
+import CustomTable from "../custom-table";
+import { Transaction } from "@/app/lib/transactions/types";
+import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -162,58 +152,7 @@ export default function TransactionsTable() {
         />
       </div>
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      {/* Pagination */}
-      <TablePagination table={table} />
+      <CustomTable columns={columns} table={table} withSelectedRows />
     </div>
   );
 }

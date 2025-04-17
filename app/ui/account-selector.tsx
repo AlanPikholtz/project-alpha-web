@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -18,12 +17,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGetAccountsQuery } from "@/lib/accounts/api";
+import { useGetAccountsQuery } from "../lib/accounts/api";
+import { cn } from "../lib/utils";
+import { useAccountId } from "../context/account-provider";
 
 export default function AccountSelector() {
+  const { selectedAccountId, setSelectedAccountId } = useAccountId();
+
   const { data: accounts } = useGetAccountsQuery({});
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -34,8 +36,9 @@ export default function AccountSelector() {
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value
-            ? accounts?.data.find((account) => `${account.id}` === value)?.name
+          {selectedAccountId
+            ? accounts?.data.find((account) => account.id === selectedAccountId)
+                ?.name
             : "Seleccionar cuenta..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -51,7 +54,9 @@ export default function AccountSelector() {
                   key={account.id}
                   value={`${account.id}`}
                   onSelect={(currentValue) => {
-                    setValue(currentValue);
+                    console.log({ currentValue });
+
+                    setSelectedAccountId(+currentValue);
                     setOpen(false);
                   }}
                 >
@@ -59,7 +64,9 @@ export default function AccountSelector() {
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === `${account.id}` ? "opacity-100" : "opacity-0"
+                      selectedAccountId === account.id
+                        ? "opacity-100"
+                        : "opacity-0"
                     )}
                   />
                 </CommandItem>

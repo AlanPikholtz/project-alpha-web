@@ -1,13 +1,13 @@
 "use client";
 
-import { useGetClientsQuery } from "@/lib/clients/api";
-import { Client } from "@/lib/clients/types";
-import { useCreateTransactionMutation } from "@/lib/transactions/api";
-import { Transaction } from "@/lib/transactions/types";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import React, { useMemo, useState } from "react";
 import LoadingSpinner from "../loading-spinner";
 import { XMarkIcon } from "@heroicons/react/16/solid";
+import { Transaction } from "@/app/lib/transactions/types";
+import { Client } from "@/app/lib/clients/types";
+import { useCreateTransactionMutation } from "@/app/lib/transactions/api";
+import { useGetClientsQuery } from "@/app/lib/clients/api";
 
 function TransactionTableRow({
   transaction,

@@ -1,6 +1,6 @@
 "use client";
 
-import TransactionsTable from "@/components/transactions/transactions-table";
+import TransactionsTable from "@/app/ui/transactions/transactions-table";
 import React from "react";
 
 export default function NewTransactionsPage() {
