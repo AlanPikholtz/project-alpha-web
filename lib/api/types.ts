@@ -5,3 +5,8 @@ export interface PagedDataResponse<T> {
   total: number;
   pages: number;
 }
+
+export interface PagedQueryParams {
+  limit?: number;
+  page?: number;
+}

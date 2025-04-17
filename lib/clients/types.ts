@@ -1,6 +1,12 @@
 export interface Client {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
+  code: string;
+  balance: string;
+  commission: string;
+  notes: string;
+  accountId: number;
   createdAt: string;
   updatedAt: string;
 }

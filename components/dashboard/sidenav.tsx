@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { ChevronUp, User2 } from "lucide-react";
+import { ChevronUp, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,7 +55,9 @@ export default function SideNav() {
                       : "hover:bg-neutral-200 text-black"
                   )}
                 >
-                  <Link href={item.url}>{item.title}</Link>
+                  <Link className="w-full" href={item.url}>
+                    {item.title}
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
@@ -69,7 +71,7 @@ export default function SideNav() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> Algun nombre xD
+                  <Settings /> Configuracion
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
