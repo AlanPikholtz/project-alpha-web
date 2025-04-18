@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -10,37 +10,13 @@ import {
 } from "@tanstack/react-table";
 
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "../../../components/ui/checkbox";
 
-import { DateRange } from "react-day-picker";
-import DateRangeFilter from "./filters/date-range-filter";
-import StatusFilter from "./filters/status-filter";
 import CustomTable from "../custom-table";
 import { Transaction } from "@/app/lib/transactions/types";
+import { transactionTypeToString } from "@/app/lib/transactions/helpers";
+import _ from "lodash";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "date",
     header: "Fecha/Hora",
@@ -53,13 +29,7 @@ const columns: ColumnDef<Partial<Transaction>>[] = [
     accessorKey: "type",
     header: "Tipo",
     cell: ({ row }) => {
-      const type = row.getValue("type");
-      switch (type) {
-        case "deposit":
-          return "Depósito";
-        default:
-          return type;
-      }
+      return _.capitalize(transactionTypeToString(row.getValue("type")));
     },
   },
   {
@@ -74,6 +44,12 @@ const columns: ColumnDef<Partial<Transaction>>[] = [
       }).format(amount);
 
       return formatted;
+    },
+    filterFn: (row, columnId, filterValue) => {
+      const amount = row.getValue(columnId);
+      return amount !== undefined && amount !== null
+        ? amount.toString().includes(filterValue.toString())
+        : false;
     },
   },
   {
@@ -91,11 +67,6 @@ export default function NewTransactionsTable({
 }: {
   data: Partial<Transaction>[];
 }) {
-  // Filters
-  const [amountFilter, setAmountFilter] = useState<string>("");
-  const [assignedFilter, setAssignedFilter] = useState<string>(""); // puede ser clientId o boolean según tu API
-  const [dateRange, setDateRange] = useState<DateRange>();
-
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -107,24 +78,24 @@ export default function NewTransactionsTable({
       columnFilters,
     },
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: setColumnFilters,
   });
+
+  console.log({ columnFilters });
 
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
       <div className="flex gap-4 justify-between items-center py-4">
-        <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
         <Input
           className="max-w-sm"
           placeholder="Buscar monto"
-          value={amountFilter}
-          onChange={(e) => setAmountFilter(e.target.value)}
-        />
-        <StatusFilter
-          assignedFilter={assignedFilter}
-          setAssignedFilter={setAssignedFilter}
+          type="number"
+          value={(table.getColumn("amount")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("amount")?.setFilterValue(event.target.value)
+          }
         />
       </div>
       {/* Table */}

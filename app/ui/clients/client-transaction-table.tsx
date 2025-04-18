@@ -14,6 +14,8 @@ import { useParams } from "next/navigation";
 import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import useExcel from "@/app/hooks/useExcel";
 import { Button } from "@/components/ui/button";
+import { transactionTypeToString } from "@/app/lib/transactions/helpers";
+import _ from "lodash";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -28,13 +30,7 @@ const columns: ColumnDef<Transaction>[] = [
     accessorKey: "type",
     header: "Tipo",
     cell: ({ row }) => {
-      const type = row.getValue("type");
-      switch (type) {
-        case "deposit":
-          return "Depósito";
-        default:
-          return type;
-      }
+      return _.capitalize(transactionTypeToString(row.getValue("type")));
     },
   },
 ];
