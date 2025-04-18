@@ -17,9 +17,8 @@ import DateRangeFilter from "./filters/date-range-filter";
 import StatusFilter from "./filters/status-filter";
 import CustomTable from "../custom-table";
 import { Transaction } from "@/app/lib/transactions/types";
-import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 
-const columns: ColumnDef<Transaction>[] = [
+const columns: ColumnDef<Partial<Transaction>>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -87,52 +86,29 @@ const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function TransactionsTable() {
+export default function NewTransactionsTable({
+  data,
+}: {
+  data: Partial<Transaction>[];
+}) {
   // Filters
   const [amountFilter, setAmountFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>(""); // puede ser clientId o boolean según tu API
   const [dateRange, setDateRange] = useState<DateRange>();
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
-
-  const { data: transactions } = useGetTransactionsQuery({
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-    amount: +amountFilter,
-    status: assignedFilter as "assigned" | "unassigned",
-    from: dateRange?.from?.toISOString(),
-    to: dateRange?.to?.toISOString(),
-  });
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
 
   const table = useReactTable({
-    data: transactions?.data || [],
+    data,
     columns,
-    pageCount: transactions?.pages,
     state: {
       columnFilters,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
     },
-    manualPagination: true,
-    manualFiltering: true,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
   });
 
   return (
@@ -152,12 +128,7 @@ export default function TransactionsTable() {
         />
       </div>
       {/* Table */}
-      <CustomTable
-        columns={columns}
-        table={table}
-        withSelectedRows
-        withPagination
-      />
+      <CustomTable columns={columns} table={table} withSelectedRows />
     </div>
   );
 }

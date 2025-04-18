@@ -8,6 +8,7 @@ export const transactionsApi = api.injectEndpoints({
     getTransactions: builder.query<
       PagedDataResponse<Transaction[]>,
       {
+        clientId?: number;
         status?: "assigned" | "unassigned";
         amount?: number;
         from?: string;
@@ -18,8 +19,19 @@ export const transactionsApi = api.injectEndpoints({
         page?: number;
       }
     >({
-      query: ({ status, amount, from, to, sort, order, limit = 0, page }) => {
+      query: ({
+        clientId,
+        status,
+        amount,
+        from,
+        to,
+        sort,
+        order,
+        limit = 0,
+        page,
+      }) => {
         const searchParams = new URLSearchParams();
+        if (clientId) searchParams.append("clientId", clientId.toString());
         if (status) searchParams.append("status", status.toString());
         if (amount) searchParams.append("amount", amount.toString());
         if (from) searchParams.append("from", from.toString());
@@ -41,19 +53,9 @@ export const transactionsApi = api.injectEndpoints({
         body: params,
       }),
     }),
-    // Client transaction
-    getClientTransactions: builder.query<Transaction[], { id: string }>({
-      query: ({ id }) => ({
-        url: `/transactions/client/${id}`,
-        method: "GET",
-      }),
-    }),
   }),
   overrideExisting: false, // It's better to keep this false unless overriding
 });
 
-export const {
-  useGetTransactionsQuery,
-  useGetClientTransactionsQuery,
-  useCreateTransactionMutation,
-} = transactionsApi;
+export const { useGetTransactionsQuery, useCreateTransactionMutation } =
+  transactionsApi;

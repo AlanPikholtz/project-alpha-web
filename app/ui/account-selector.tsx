@@ -21,7 +21,7 @@ import { useGetAccountsQuery } from "../lib/accounts/api";
 import { cn } from "../lib/utils";
 import { useAccountId } from "../context/account-provider";
 
-export default function AccountSelector() {
+export default function AccountSelector({ disable }: { disable?: boolean }) {
   const { selectedAccountId, setSelectedAccountId } = useAccountId();
 
   const { data: accounts } = useGetAccountsQuery({});
@@ -29,7 +29,7 @@ export default function AccountSelector() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild disabled={disable}>
         <Button
           variant="outline"
           role="combobox"

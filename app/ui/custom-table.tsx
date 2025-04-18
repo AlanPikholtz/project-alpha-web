@@ -18,6 +18,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   table: TableInterface<TData>;
   withSelectedRows?: boolean;
+  withPagination?: boolean;
   onRowClick?: (row: TData) => void;
 }
 
@@ -25,6 +26,7 @@ export default function CustomTable<TData, TValue>({
   columns,
   table,
   withSelectedRows,
+  withPagination,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
   return (
@@ -82,7 +84,9 @@ export default function CustomTable<TData, TValue>({
         </Table>
       </div>
       {/* Pagination */}
-      <TablePagination table={table} withSelectedRows={withSelectedRows} />
+      {withPagination ? (
+        <TablePagination table={table} withSelectedRows={withSelectedRows} />
+      ) : null}
     </div>
   );
 }
