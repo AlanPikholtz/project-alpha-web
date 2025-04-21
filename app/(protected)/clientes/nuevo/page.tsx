@@ -2,6 +2,10 @@ import NewClientForm from "@/app/ui/clients/new-client-form";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
 
+export const metadata = {
+  title: "Nuevo Cliente",
+};
+
 export default function NewClientPage() {
   return (
     <div className="flex h-full flex-col gap-y-5">

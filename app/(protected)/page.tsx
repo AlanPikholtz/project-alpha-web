@@ -1,6 +1,8 @@
-"use client";
-
 import React from "react";
+
+export const metadata = {
+  title: "Totalitarias",
+};
 
 export default function Dashboard() {
   return (

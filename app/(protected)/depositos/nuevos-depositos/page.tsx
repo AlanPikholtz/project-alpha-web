@@ -2,10 +2,7 @@
 
 import { useAccountId } from "@/app/context/account-provider";
 import { useCreateBulkTransactionMutation } from "@/app/lib/transactions/api";
-import {
-  stringToISODate,
-  stringToTransactionType,
-} from "@/app/lib/transactions/helpers";
+import { mapStringToTransactions } from "@/app/lib/transactions/helpers";
 import { Transaction } from "@/app/lib/transactions/types";
 import AccountSelector from "@/app/ui/account-selector";
 import NewTransactionsTable from "@/app/ui/transactions/new-transactions-table";
@@ -20,9 +17,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
-import Head from "next/head";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -53,20 +49,25 @@ export default function NewTransactionsPage() {
   // Excel transactions mapping
   const handleContinue = async (data: z.infer<typeof formSchema>) => {
     try {
-      const rows = data.transactions
-        .split("\n")
-        .map((row) => row.split("\t").map((cell) => cell.trim()));
+      const { valid, invalid } = mapStringToTransactions(data.transactions);
+      if (invalid.length > 0) {
+        console.warn("❌ Transacciones descartadas:");
+        invalid.forEach((err) =>
+          console.warn(
+            `Fila ${err.index + 1} (${err.reason}):`,
+            err.row.join(" | ")
+          )
+        );
+      }
 
-      const mappedTransactions: Partial<Transaction>[] = rows.map((row) => {
-        return {
-          date: stringToISODate(row[0]),
-          type: stringToTransactionType(row[1]),
-          amount: parseFloat(row[2]),
-          currency: "ARS", // Hardcoded for now
-        };
-      });
+      if (valid.length === 0) {
+        alert(
+          "⚠️ Todas las transacciones tienen errores. No se pudo procesar ninguna."
+        );
+        return;
+      }
 
-      setNewTransactionsData(mappedTransactions);
+      setNewTransactionsData(valid);
       setState("pasted");
     } catch (error) {
       console.log("🚨 Error parsing transactions:", error);
@@ -88,79 +89,59 @@ export default function NewTransactionsPage() {
     }
   };
 
-  // const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-  //   e.preventDefault(); // Prevent default pasting behavior
-  //   const text: string = e.clipboardData.getData("text");
-
-  //   const rows = text
-  //     .split("\n")
-  //     .map((row) => row.split("\t").map((cell) => cell.trim()));
-
-  //   const parsedTransactions: Partial<Transaction>[] = rows.map((row) => ({
-  //     createdAt: row[0], // Keep as string
-  //     type: row[1], // Chusmear esto
-  //     amount: parseFloat(row[2]), // Ensure correct number format
-  //   }));
-
-  //   // setTableData(parsedTransactions);
-  // };
-
   const handleBack = () => router.back();
 
+  useEffect(() => {
+    document.title = "Nuevos depósitos";
+  }, []);
+
   return (
-    <>
-      <Head>
-        <title>Nuevos Depositos</title>
-      </Head>
-      <div className="flex h-full flex-col gap-y-6">
-        {/* Back button */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="rounded-full"
-          onClick={handleBack}
-        >
-          <ArrowLeft />
-        </Button>
+    <div className="flex h-full flex-col gap-y-6">
+      {/* Back button */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="rounded-full"
+        onClick={handleBack}
+      >
+        <ArrowLeft />
+      </Button>
 
-        <div className="flex items-center justify-between">
-          <AccountSelector disable />
-          {state === "initial" ? (
-            <Button onClick={form.handleSubmit(handleContinue)}>
-              Continuar
-            </Button>
-          ) : (
-            <Button loading={loading} onClick={handleSave}>
-              Guardar todo
-            </Button>
-          )}
-        </div>
-
+      <div className="flex items-center justify-between">
+        <AccountSelector disable />
         {state === "initial" ? (
-          <Form {...form}>
-            <form className="h-full flex flex-col">
-              <FormField
-                control={form.control}
-                name="transactions"
-                render={({ field }) => (
-                  <FormItem className="h-full">
-                    <FormControl>
-                      <Textarea
-                        className="resize-none"
-                        placeholder="Pegar depósitos"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
+          <Button onClick={form.handleSubmit(handleContinue)}>Continuar</Button>
         ) : (
-          <NewTransactionsTable data={newTransactionsData} />
+          <Button loading={loading} onClick={handleSave}>
+            Guardar todo
+          </Button>
         )}
       </div>
-    </>
+
+      {state === "initial" ? (
+        <Form {...form}>
+          <form className="h-full flex flex-col">
+            <FormField
+              control={form.control}
+              name="transactions"
+              render={({ field }) => (
+                <FormItem className="h-full">
+                  <FormControl>
+                    <Textarea
+                      className="resize-none"
+                      placeholder="Pegar depósitos"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      ) : (
+        <NewTransactionsTable data={newTransactionsData} />
+      )}
+    </div>
   );
 }

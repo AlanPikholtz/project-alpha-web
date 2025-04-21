@@ -4,10 +4,14 @@ import ClientsTable from "@/app/ui/clients/clients-table";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 
 export default function ClientsPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    document.title = "Clientes";
+  }, []);
 
   return (
     <div>
