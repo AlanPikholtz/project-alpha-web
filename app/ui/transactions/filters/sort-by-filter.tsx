@@ -1,5 +1,5 @@
-import { assignedOptions } from "@/app/lib/transactions/data";
-import { TransactionStatus } from "@/app/lib/transactions/types";
+import { sortByOptions } from "@/app/lib/transactions/data";
+import { SortBy } from "@/app/lib/transactions/types";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +16,12 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import React from "react";
 
-export default function StatusFilter({
-  status,
-  setStatus,
+export default function SortByFilter({
+  sortByFilter,
+  setSortByFilter,
 }: {
-  status?: TransactionStatus;
-  setStatus: (value: TransactionStatus) => void;
+  sortByFilter?: SortBy;
+  setSortByFilter: (value: SortBy) => void;
 }) {
   return (
     <Popover>
@@ -32,7 +32,7 @@ export default function StatusFilter({
           role="combobox"
           asChild
         >
-          {assignedOptions.find((o) => o.value === status)?.label ?? "Todos"}
+          Ordenar Por
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -40,16 +40,18 @@ export default function StatusFilter({
         <Command>
           <CommandList>
             <CommandGroup>
-              {assignedOptions.map((option) => (
+              {sortByOptions.map((option) => (
                 <CommandItem
                   key={option.value}
-                  onSelect={() => setStatus(option.value as TransactionStatus)}
+                  onSelect={() => setSortByFilter(option.value as SortBy)}
                 >
                   {option.label}
                   <Check
                     className={cn(
                       "ml-auto",
-                      status === option.value ? "opacity-100" : "opacity-0"
+                      sortByFilter === option.value
+                        ? "opacity-100"
+                        : "opacity-0"
                     )}
                   />
                 </CommandItem>

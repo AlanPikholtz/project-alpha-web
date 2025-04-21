@@ -43,9 +43,19 @@ export default function DateRangeFilter({
           mode="range"
           selected={dateRange}
           numberOfMonths={2}
+          defaultMonth={dateRange?.from}
           locale={es}
           onSelect={setDateRange}
         />
+        <div className="flex justify-end p-2 border-t">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setDateRange(undefined)}
+          >
+            Borrar
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

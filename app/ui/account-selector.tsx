@@ -35,11 +35,12 @@ export default function AccountSelector({ disable }: { disable?: boolean }) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disable}>
         <Button
+          className="min-w-[180px] justify-between"
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
           loading={loadingAccounts}
+          asChild
         >
           {selectedAccountId
             ? accounts.find((account) => account.id === selectedAccountId)?.name

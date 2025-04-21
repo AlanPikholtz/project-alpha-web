@@ -99,7 +99,7 @@ export default function NewTransactionsTable({
         />
       </div>
       {/* Table */}
-      <CustomTable columns={columns} table={table} withSelectedRows />
+      <CustomTable columns={columns} table={table} />
     </div>
   );
 }

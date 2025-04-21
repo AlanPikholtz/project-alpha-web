@@ -1,5 +1,4 @@
 import LoginForm from "@/app/ui/auth/login-form";
-import { Separator } from "@/components/ui/separator";
 import React from "react";
 
 export default function LoginPage() {
@@ -15,11 +14,11 @@ export default function LoginPage() {
             </p>
           </div>
           <LoginForm />
-          <div className="flex items-center gap-x-5">
+          {/* <div className="flex items-center gap-x-5">
             <Separator className="flex-1" />
             <p className="text-xs text-zinc-500">Quiero ser cliente</p>
             <Separator className="flex-1" />
-          </div>
+          </div> */}
         </div>
       </div>
     </main>
