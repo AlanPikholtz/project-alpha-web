@@ -5,6 +5,10 @@ export interface Transaction {
   date: string;
   type: TransactionType;
   amount: number;
+  clientAmount: number;
   currency: string;
   createdAt: string;
 }
+
+export type TransactionStatus = "assigned" | "unassigned";
+export type SortBy = "assignedAt" | "createdAt" | "date";

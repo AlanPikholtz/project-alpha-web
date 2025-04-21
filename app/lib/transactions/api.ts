@@ -1,6 +1,6 @@
 import api from "../api/api";
 import { PagedDataResponse } from "../api/types";
-import { Transaction } from "./types";
+import { SortBy, Transaction } from "./types";
 
 export const transactionsApi = api
   .enhanceEndpoints({ addTagTypes: ["Transactions"] })
@@ -15,7 +15,7 @@ export const transactionsApi = api
           amount?: number;
           from?: string;
           to?: string;
-          sort?: "assignedAt" | "createdAt" | "date";
+          sort?: SortBy;
           order?: "asc" | "desc";
           limit?: number;
           page?: number;

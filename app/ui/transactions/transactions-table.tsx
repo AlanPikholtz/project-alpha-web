@@ -16,10 +16,12 @@ import { DateRange } from "react-day-picker";
 import DateRangeFilter from "./filters/date-range-filter";
 import StatusFilter from "./filters/status-filter";
 import CustomTable from "../custom-table";
-import { Transaction } from "@/app/lib/transactions/types";
+import { Transaction, TransactionStatus } from "@/app/lib/transactions/types";
 import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
+import { Button } from "@/components/ui/button";
+import { assignedOptions } from "@/app/lib/transactions/data";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -74,11 +76,11 @@ const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
-    accessorKey: "clientId",
+    accessorKey: "clientFullName",
     header: "Cliente",
     cell: ({ row }) => {
-      const clientId = row.getValue("clientId");
-      return clientId || "Sin Asignar";
+      const clientId = row.getValue("clientFullName");
+      return clientId || "Sin asignar";
     },
   },
 ];
@@ -86,7 +88,9 @@ const columns: ColumnDef<Transaction>[] = [
 export default function TransactionsTable() {
   // Filters
   const [amountFilter, setAmountFilter] = useState<string>("");
-  const [assignedFilter, setAssignedFilter] = useState<string>(""); // puede ser clientId o boolean según tu API
+  const [statusFilter, setStatusFilter] = useState<
+    TransactionStatus | undefined
+  >(assignedOptions[0].value as TransactionStatus | undefined);
   const [dateRange, setDateRange] = useState<DateRange>();
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -96,7 +100,7 @@ export default function TransactionsTable() {
     page: pageIndex + 1, // Current page
     limit: pageSize, // Amount of pages
     amount: +amountFilter,
-    status: assignedFilter as "assigned" | "unassigned",
+    status: statusFilter,
     from: dateRange?.from?.toISOString(),
     to: dateRange?.to?.toISOString(),
   });
@@ -142,17 +146,18 @@ export default function TransactionsTable() {
           value={amountFilter}
           onChange={(e) => setAmountFilter(e.target.value)}
         />
-        <StatusFilter
-          assignedFilter={assignedFilter}
-          setAssignedFilter={setAssignedFilter}
-        />
+        <StatusFilter status={statusFilter} setStatus={setStatusFilter} />
       </div>
       {/* Table */}
       <CustomTable
         columns={columns}
         table={table}
-        withSelectedRows
         withPagination
+        bottomLeftComponent={
+          table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <Button variant="secondary">Asignar depósitos</Button>
+          )
+        }
       />
     </div>
   );

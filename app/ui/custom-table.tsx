@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import {
   Table,
   TableBody,
@@ -13,20 +13,21 @@ import {
   Table as TableInterface,
 } from "@tanstack/react-table";
 import { TablePagination } from "./table-pagination";
+import clsx from "clsx";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   table: TableInterface<TData>;
-  withSelectedRows?: boolean;
   withPagination?: boolean;
+  bottomLeftComponent?: ReactNode;
   onRowClick?: (row: TData) => void;
 }
 
 export default function CustomTable<TData, TValue>({
   columns,
   table,
-  withSelectedRows,
   withPagination,
+  bottomLeftComponent,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
   return (
@@ -83,10 +84,17 @@ export default function CustomTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {/* Pagination */}
-      {withPagination ? (
-        <TablePagination table={table} withSelectedRows={withSelectedRows} />
-      ) : null}
+
+      <div
+        className={clsx("flex items-center", {
+          "justify-end": !bottomLeftComponent,
+          "justify-between": bottomLeftComponent !== undefined,
+        })}
+      >
+        {bottomLeftComponent}
+        {/* Pagination */}
+        {withPagination ? <TablePagination table={table} /> : null}
+      </div>
     </div>
   );
 }
