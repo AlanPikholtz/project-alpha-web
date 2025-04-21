@@ -103,7 +103,12 @@ export default function ClientsTable() {
         />
       </div>
       {/* Table */}
-      <CustomTable columns={columns} table={table} onRowClick={onRowClick} />
+      <CustomTable
+        columns={columns}
+        table={table}
+        withPagination
+        onRowClick={onRowClick}
+      />
     </div>
   );
 }

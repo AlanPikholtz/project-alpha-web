@@ -18,6 +18,8 @@ import StatusFilter from "./filters/status-filter";
 import CustomTable from "../custom-table";
 import { Transaction } from "@/app/lib/transactions/types";
 import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
+import { transactionTypeToString } from "@/app/lib/transactions/helpers";
+import _ from "lodash";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -54,13 +56,7 @@ const columns: ColumnDef<Transaction>[] = [
     accessorKey: "type",
     header: "Tipo",
     cell: ({ row }) => {
-      const type = row.getValue("type");
-      switch (type) {
-        case "deposit":
-          return "Depósito";
-        default:
-          return type;
-      }
+      return _.capitalize(transactionTypeToString(row.getValue("type")));
     },
   },
   {
@@ -152,7 +148,12 @@ export default function TransactionsTable() {
         />
       </div>
       {/* Table */}
-      <CustomTable columns={columns} table={table} withSelectedRows />
+      <CustomTable
+        columns={columns}
+        table={table}
+        withSelectedRows
+        withPagination
+      />
     </div>
   );
 }

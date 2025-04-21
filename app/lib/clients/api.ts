@@ -18,6 +18,15 @@ export const clientsApi = api
         },
         providesTags: ["Clients"],
       }),
+      getClientById: builder.query<Client, { id: number }>({
+        query: ({ id }) => {
+          return {
+            url: `/clients/${id}`,
+            method: "GET",
+          };
+        },
+        providesTags: ["Clients"],
+      }),
       createClient: builder.mutation<{ id: number }, Partial<Client>>({
         query: ({
           firstName,
@@ -48,4 +57,8 @@ export const clientsApi = api
     overrideExisting: false, // It's better to keep this false unless overriding
   });
 
-export const { useGetClientsQuery, useCreateClientMutation } = clientsApi;
+export const {
+  useGetClientsQuery,
+  useGetClientByIdQuery,
+  useCreateClientMutation,
+} = clientsApi;

@@ -1,6 +1,6 @@
 "use client";
 
-import SideNav from "@/app/ui/dashboard/sidenav";
+import SideNav from "@/app/ui/sidebar/side-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AccountProvider } from "../context/account-provider";
 

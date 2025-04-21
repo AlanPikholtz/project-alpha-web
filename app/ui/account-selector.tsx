@@ -17,28 +17,32 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGetAccountsQuery } from "../lib/accounts/api";
 import { cn } from "../lib/utils";
 import { useAccountId } from "../context/account-provider";
 
-export default function AccountSelector() {
-  const { selectedAccountId, setSelectedAccountId } = useAccountId();
+export default function AccountSelector({ disable }: { disable?: boolean }) {
+  const { accounts, loadingAccounts, selectedAccountId, setSelectedAccountId } =
+    useAccountId();
 
-  const { data: accounts } = useGetAccountsQuery({});
   const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (selectedAccountId || accounts.length === 0) return;
+    setSelectedAccountId(accounts[0].id);
+  }, [accounts, selectedAccountId, setSelectedAccountId]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild disabled={disable}>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className="w-[200px] justify-between"
+          loading={loadingAccounts}
         >
           {selectedAccountId
-            ? accounts?.data.find((account) => account.id === selectedAccountId)
-                ?.name
+            ? accounts.find((account) => account.id === selectedAccountId)?.name
             : "Seleccionar cuenta..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -49,7 +53,7 @@ export default function AccountSelector() {
           <CommandList>
             <CommandEmpty>Cuenta no encontrada.</CommandEmpty>
             <CommandGroup>
-              {accounts?.data.map((account) => (
+              {accounts.map((account) => (
                 <CommandItem
                   key={account.id}
                   value={`${account.id}`}
