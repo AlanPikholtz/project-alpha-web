@@ -1,10 +1,12 @@
-"use client";
-
 import TransactionsTable from "@/app/ui/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
 import AccountSelector from "@/app/ui/account-selector";
+
+export const metadata = {
+  title: "Depositos",
+};
 
 export default function TransactionsPage() {
   return (
@@ -14,7 +16,7 @@ export default function TransactionsPage() {
         <AccountSelector />
         {/* New transaccions */}
         <Button asChild>
-          <Link href="/depositos/nuevos-depositos">Nuevas Transacciones</Link>
+          <Link href="/depositos/nuevos-depositos">Nuevos depósitos</Link>
         </Button>
       </div>
       <TransactionsTable />

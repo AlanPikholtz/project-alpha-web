@@ -12,3 +12,8 @@ export interface Transaction {
 
 export type TransactionStatus = "assigned" | "unassigned";
 export type SortBy = "assignedAt" | "createdAt" | "date";
+
+export type TransactionParseResult = {
+  valid: Partial<Transaction>[];
+  invalid: { row: string[]; reason: string; index: number }[];
+};
