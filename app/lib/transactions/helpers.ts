@@ -13,7 +13,7 @@ export const mapStringToTransactions = (
   const invalid: { row: string[]; reason: string; index: number }[] = [];
 
   rows.forEach((row, index) => {
-    const [date, type, rawAmount, currency] = row;
+    const [date, type, rawAmount] = row;
 
     if (row.length !== 4) {
       invalid.push({ row, reason: "Debe tener 4 columnas", index });
@@ -36,16 +36,16 @@ export const mapStringToTransactions = (
       return;
     }
 
-    if (!currency) {
-      invalid.push({ row, reason: "Moneda faltante", index });
-      return;
-    }
+    // if (!currency) {
+    //   invalid.push({ row, reason: "Moneda faltante", index });
+    //   return;
+    // }
 
     valid.push({
       date: stringToISODate(date),
       type: stringToTransactionType(type),
       amount: parseFloat(normalizedAmount),
-      currency,
+      currency: "ARS",
     });
   });
 

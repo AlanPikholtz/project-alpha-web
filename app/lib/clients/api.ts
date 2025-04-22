@@ -60,5 +60,6 @@ export const clientsApi = api
 export const {
   useGetClientsQuery,
   useGetClientByIdQuery,
+  useLazyGetClientByIdQuery,
   useCreateClientMutation,
 } = clientsApi;

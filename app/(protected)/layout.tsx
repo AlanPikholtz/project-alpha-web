@@ -3,8 +3,11 @@
 import SideNav from "@/app/ui/sidebar/side-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AccountProvider } from "../context/account-provider";
+import { useGetClientsQuery } from "../lib/clients/api";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  // Lets get all clients for later usage (cache will be used)
+  useGetClientsQuery({ limit: 0 });
   return (
     <AccountProvider>
       <SidebarProvider>

@@ -140,7 +140,10 @@ export default function NewTransactionsPage() {
           </form>
         </Form>
       ) : (
-        <NewTransactionsTable data={newTransactionsData} />
+        <NewTransactionsTable
+          data={newTransactionsData}
+          setData={setNewTransactionsData}
+        />
       )}
     </div>
   );
