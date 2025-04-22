@@ -37,6 +37,8 @@ export default function NewTransactionsPage() {
     },
   });
 
+  const pastedDataWatch = form.watch("transactions");
+
   // Lets just have two states, "initial" state for pasting and "pasted" for showing table
   const [state, setState] = useState<"initial" | "pasted">("initial");
   const [newTransactionsData, setNewTransactionsData] = useState<
@@ -110,7 +112,12 @@ export default function NewTransactionsPage() {
       <div className="flex items-center justify-between">
         <AccountSelector disable />
         {state === "initial" ? (
-          <Button onClick={form.handleSubmit(handleContinue)}>Continuar</Button>
+          <Button
+            disabled={pastedDataWatch.length === 0}
+            onClick={form.handleSubmit(handleContinue)}
+          >
+            Continuar
+          </Button>
         ) : (
           <Button loading={loading} onClick={handleSave}>
             Guardar todo

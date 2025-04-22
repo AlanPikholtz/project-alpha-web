@@ -22,6 +22,7 @@ import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import { Button } from "@/components/ui/button";
 import { assignedOptions } from "@/app/lib/transactions/data";
+import AssignClientModal from "./assign-client-modal";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -96,14 +97,21 @@ export default function TransactionsTable() {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const { data: transactions } = useGetTransactionsQuery({
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-    amount: +amountFilter,
-    status: statusFilter,
-    from: dateRange?.from?.toISOString(),
-    to: dateRange?.to?.toISOString(),
-  });
+  const { data: transactions } = useGetTransactionsQuery(
+    {
+      page: pageIndex + 1, // Current page
+      limit: pageSize, // Amount of pages
+      amount: +amountFilter,
+      status: statusFilter,
+      from: dateRange?.from?.toISOString(),
+      to: dateRange?.to?.toISOString(),
+    },
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    }
+  );
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -135,6 +143,13 @@ export default function TransactionsTable() {
     },
   });
 
+  const handleTransactionsAssignment = async () => {
+    try {
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
@@ -155,7 +170,11 @@ export default function TransactionsTable() {
         withPagination
         bottomLeftComponent={
           table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <Button variant="secondary">Asignar depósitos</Button>
+            <AssignClientModal
+              transactionsAmount={
+                table.getFilteredSelectedRowModel().rows.length
+              }
+            />
           )
         }
       />
