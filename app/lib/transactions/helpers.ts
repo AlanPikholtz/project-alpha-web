@@ -1,7 +1,7 @@
 import { isValid, parse } from "date-fns";
 import { Transaction, TransactionParseResult, TransactionType } from "./types";
 
-const VALID_TYPES = ["Depósito", "Retiro", "Conversión", ""];
+const VALID_TYPES = ["Depósito", "", ""];
 export const mapStringToTransactions = (
   transactions: string
 ): TransactionParseResult => {
@@ -9,16 +9,16 @@ export const mapStringToTransactions = (
     .split("\n")
     .map((row) => row.split("\t").map((cell) => cell.trim()));
 
-  const valid: Partial<Transaction>[] = [];
+  const allValid: Partial<Transaction>[] = [];
   const invalid: { row: string[]; reason: string; index: number }[] = [];
 
   rows.forEach((row, index) => {
     const [date, type, rawAmount] = row;
 
-    if (row.length !== 4) {
-      invalid.push({ row, reason: "Debe tener 4 columnas", index });
-      return;
-    }
+    // if (row.length !== 4) {
+    //   invalid.push({ row, reason: "Debe tener 4 columnas", index });
+    //   return;
+    // }
 
     if (!date || !isValid(parse(date, "d/M/yyyy HH:mm:ss", new Date()))) {
       invalid.push({ row, reason: "Fecha inválida", index });
@@ -41,7 +41,7 @@ export const mapStringToTransactions = (
     //   return;
     // }
 
-    valid.push({
+    allValid.push({
       date: stringToISODate(date),
       type: stringToTransactionType(type),
       amount: parseFloat(normalizedAmount),
@@ -49,7 +49,22 @@ export const mapStringToTransactions = (
     });
   });
 
-  return { valid, invalid };
+  // Now lets move duplicated ones to a separated list
+  const seen = new Set<string>();
+  const valid: Partial<Transaction>[] = [];
+  const duplicates: Partial<Transaction>[] = [];
+
+  for (const tx of allValid) {
+    const key = JSON.stringify(tx);
+    if (seen.has(key)) {
+      duplicates.push(tx);
+    } else {
+      seen.add(key);
+      valid.push(tx);
+    }
+  }
+
+  return { valid, invalid, duplicates };
 };
 
 export const stringToISODate = (date: string) => {

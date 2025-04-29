@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -15,8 +15,11 @@ import CustomTable from "../custom-table";
 import { Transaction } from "@/app/lib/transactions/types";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
-import AssignClientDropdown from "./assign-client-dropdown";
-import { Client } from "@/app/lib/clients/types";
+import AccountSelector from "../account-selector";
+import { Button } from "@/components/ui/button";
+import { useCreateBulkTransactionMutation } from "@/app/lib/transactions/api";
+import { useAccountId } from "@/app/context/account-provider";
+import { useRouter } from "next/navigation";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
   {
@@ -58,46 +61,23 @@ const columns: ColumnDef<Partial<Transaction>>[] = [
 
 export default function NewTransactionsTable({
   data,
-  setData,
 }: {
   data: Partial<Transaction>[];
-  setData: (data: Partial<Transaction>[]) => void;
 }) {
+  const router = useRouter();
+
+  const { selectedAccountId } = useAccountId();
+
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
 
-  const handleTableUpdate = useCallback(
-    (client: Client, rowIndex: number) => {
-      // Lets find the row that was just updated and add a client to it
-      const updatedData = [...data];
-      data[rowIndex].clientId = client.id;
-      data[rowIndex].clientFullName = `${client.firstName} ${client.lastName}`;
-      // Updates table state
-      setData(updatedData);
-    },
-    [data, setData]
-  );
-
-  const mutableColumns = useMemo(() => {
-    return [
-      ...columns,
-      {
-        accessorKey: "clientId",
-        header: "Cliente",
-        cell: ({ row }) => (
-          <AssignClientDropdown
-            transaction={row.original}
-            updateTable={(client) => handleTableUpdate(client, row.index)}
-          />
-        ),
-      },
-    ];
-  }, [handleTableUpdate]);
+  const [createBulkTransaction, { isLoading: loading }] =
+    useCreateBulkTransactionMutation();
 
   const table = useReactTable({
     data,
-    columns: mutableColumns,
+    columns,
     state: {
       columnFilters,
     },
@@ -106,19 +86,42 @@ export default function NewTransactionsTable({
     onColumnFiltersChange: setColumnFilters,
   });
 
+  // Vulk saving
+  const handleSave = async () => {
+    if (!selectedAccountId) return;
+    try {
+      await createBulkTransaction({
+        accountId: selectedAccountId,
+        transactions: data,
+      }).unwrap();
+
+      router.back();
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
-      <div className="flex gap-4 justify-between items-center py-4">
-        <Input
-          className="max-w-sm"
-          placeholder="Buscar monto"
-          type="number"
-          value={(table.getColumn("amount")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("amount")?.setFilterValue(event.target.value)
-          }
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex gap-10 items-center">
+          <AccountSelector disable />
+          <Input
+            className="max-w-sm"
+            placeholder="Buscar monto"
+            type="number"
+            value={
+              (table.getColumn("amount")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("amount")?.setFilterValue(event.target.value)
+            }
+          />
+        </div>
+        <Button loading={loading} onClick={handleSave}>
+          Guardar
+        </Button>
       </div>
       {/* Table */}
       <CustomTable columns={columns} table={table} />
