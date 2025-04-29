@@ -18,4 +18,5 @@ export type SortBy = "assignedAt" | "createdAt" | "date";
 export type TransactionParseResult = {
   valid: Partial<Transaction>[];
   invalid: { row: string[]; reason: string; index: number }[];
+  duplicates: Partial<Transaction>[]; // Valid transaccions that are duplicated
 };

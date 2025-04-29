@@ -1,10 +1,9 @@
 "use client";
 
-import { useAccountId } from "@/app/context/account-provider";
-import { useCreateBulkTransactionMutation } from "@/app/lib/transactions/api";
 import { mapStringToTransactions } from "@/app/lib/transactions/helpers";
 import { Transaction } from "@/app/lib/transactions/types";
 import AccountSelector from "@/app/ui/account-selector";
+import DuplicatedTransactionsModal from "@/app/ui/transactions/duplicated-transactions-modal";
 import NewTransactionsTable from "@/app/ui/transactions/new-transactions-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +26,6 @@ const formSchema = z.object({
 });
 
 export default function NewTransactionsPage() {
-  const { selectedAccountId } = useAccountId();
-
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,14 +41,19 @@ export default function NewTransactionsPage() {
   const [newTransactionsData, setNewTransactionsData] = useState<
     Partial<Transaction>[]
   >([]);
-
-  const [createBulkTransaction, { isLoading: loading }] =
-    useCreateBulkTransactionMutation();
+  const [duplicatedTransactions, setDuplicatedTransactions] = useState<
+    Partial<Transaction>[]
+  >([]);
+  const [duplicatedModalOpen, setDuplicatedModalOpen] =
+    useState<boolean>(false);
 
   // Excel transactions mapping
   const handleContinue = async (data: z.infer<typeof formSchema>) => {
     try {
-      const { valid, invalid } = mapStringToTransactions(data.transactions);
+      const { valid, duplicates, invalid } = mapStringToTransactions(
+        data.transactions
+      );
+
       if (invalid.length > 0) {
         console.warn("❌ Transacciones descartadas:");
         invalid.forEach((err) =>
@@ -70,29 +72,19 @@ export default function NewTransactionsPage() {
       }
 
       setNewTransactionsData(valid);
+      setDuplicatedTransactions(duplicates);
       setState("pasted");
     } catch (error) {
       console.log("🚨 Error parsing transactions:", error);
     }
   };
 
-  // Vulk saving
-  const handleSave = async () => {
-    if (!selectedAccountId) return;
-    try {
-      await createBulkTransaction({
-        accountId: selectedAccountId,
-        transactions: newTransactionsData,
-      }).unwrap();
-
-      handleBack();
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   const handleBack = () => router.back();
 
+  useEffect(() => {
+    if (duplicatedTransactions.length === 0) return;
+    setDuplicatedModalOpen(true);
+  }, [duplicatedTransactions]);
   useEffect(() => {
     document.title = "Nuevos depósitos";
   }, []);
@@ -109,21 +101,17 @@ export default function NewTransactionsPage() {
         <ArrowLeft />
       </Button>
 
-      <div className="flex items-center justify-between">
-        <AccountSelector disable />
-        {state === "initial" ? (
+      {state === "initial" ? (
+        <div className="flex items-center justify-between">
+          <AccountSelector disable />
           <Button
             disabled={pastedDataWatch.length === 0}
             onClick={form.handleSubmit(handleContinue)}
           >
             Continuar
           </Button>
-        ) : (
-          <Button loading={loading} onClick={handleSave}>
-            Guardar todo
-          </Button>
-        )}
-      </div>
+        </div>
+      ) : null}
 
       {state === "initial" ? (
         <Form {...form}>
@@ -147,10 +135,14 @@ export default function NewTransactionsPage() {
           </form>
         </Form>
       ) : (
-        <NewTransactionsTable
-          data={newTransactionsData}
-          setData={setNewTransactionsData}
-        />
+        <>
+          <NewTransactionsTable data={newTransactionsData} />
+          <DuplicatedTransactionsModal
+            open={duplicatedModalOpen}
+            transactions={duplicatedTransactions}
+            onClose={setDuplicatedModalOpen}
+          />
+        </>
       )}
     </div>
   );
