@@ -6,8 +6,10 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   clientAmount: number;
+  clientFullName: string;
   currency: string;
   createdAt: string;
+  accountId: number;
 }
 
 export type TransactionStatus = "assigned" | "unassigned";

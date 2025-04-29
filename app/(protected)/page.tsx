@@ -1,13 +1,19 @@
-import React from "react";
+"use client";
 
-export const metadata = {
-  title: "Totalitarias",
-};
+import React, { useEffect } from "react";
+import { useGetMetricsQuery } from "../lib/metrics/api";
+import ClientsPieChart from "../ui/metrics/clients-pie-chart";
 
 export default function Dashboard() {
+  const { data: metrics } = useGetMetricsQuery();
+
+  useEffect(() => {
+    document.title = "Totalitarias";
+  }, []);
+
   return (
     <div className="flex flex-col h-full">
-      <h1>Pantalla inicial! Aca seguramente venga un Dashboard</h1>
+      <ClientsPieChart data={metrics?.clientsPerAccount} />
     </div>
   );
 }

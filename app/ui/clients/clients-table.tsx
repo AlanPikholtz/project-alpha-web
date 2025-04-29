@@ -36,7 +36,7 @@ export default function ClientsTable() {
   const {
     data: clients,
     isLoading: loading,
-    isError: error,
+    isFetching: fetchingClients,
   } = useGetClientsQuery({
     page: pageIndex + 1, // Current page
     limit: pageSize, // Amount of pages
@@ -83,14 +83,6 @@ export default function ClientsTable() {
     router.push(`/clientes/${client.id}`);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {JSON.stringify(error)}</div>;
-  }
-
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
@@ -106,6 +98,8 @@ export default function ClientsTable() {
       <CustomTable
         columns={columns}
         table={table}
+        loading={loading}
+        fetching={fetchingClients}
         withPagination
         onRowClick={onRowClick}
       />

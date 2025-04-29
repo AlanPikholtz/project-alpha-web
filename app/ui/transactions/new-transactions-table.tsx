@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -15,6 +15,8 @@ import CustomTable from "../custom-table";
 import { Transaction } from "@/app/lib/transactions/types";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
+import AssignClientDropdown from "./assign-client-dropdown";
+import { Client } from "@/app/lib/clients/types";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
   {
@@ -52,28 +54,50 @@ const columns: ColumnDef<Partial<Transaction>>[] = [
         : false;
     },
   },
-  {
-    accessorKey: "clientId",
-    header: "Cliente",
-    cell: ({ row }) => {
-      const clientId = row.getValue("clientId");
-      return clientId || "Sin Asignar";
-    },
-  },
 ];
 
 export default function NewTransactionsTable({
   data,
+  setData,
 }: {
   data: Partial<Transaction>[];
+  setData: (data: Partial<Transaction>[]) => void;
 }) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
 
+  const handleTableUpdate = useCallback(
+    (client: Client, rowIndex: number) => {
+      // Lets find the row that was just updated and add a client to it
+      const updatedData = [...data];
+      data[rowIndex].clientId = client.id;
+      data[rowIndex].clientFullName = `${client.firstName} ${client.lastName}`;
+      // Updates table state
+      setData(updatedData);
+    },
+    [data, setData]
+  );
+
+  const mutableColumns = useMemo(() => {
+    return [
+      ...columns,
+      {
+        accessorKey: "clientId",
+        header: "Cliente",
+        cell: ({ row }) => (
+          <AssignClientDropdown
+            transaction={row.original}
+            updateTable={(client) => handleTableUpdate(client, row.index)}
+          />
+        ),
+      },
+    ];
+  }, [handleTableUpdate]);
+
   const table = useReactTable({
     data,
-    columns,
+    columns: mutableColumns,
     state: {
       columnFilters,
     },
@@ -81,8 +105,6 @@ export default function NewTransactionsTable({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnFiltersChange: setColumnFilters,
   });
-
-  console.log({ columnFilters });
 
   return (
     <div className="flex flex-col gap-y-6.5">
