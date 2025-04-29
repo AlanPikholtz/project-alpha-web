@@ -47,6 +47,7 @@ export const transactionsApi = api
             method: "GET",
           };
         },
+        providesTags: ["Transactions"],
       }),
       createTransaction: builder.mutation<{ id: string }, Partial<Transaction>>(
         {

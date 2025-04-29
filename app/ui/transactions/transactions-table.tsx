@@ -20,7 +20,6 @@ import { Transaction, TransactionStatus } from "@/app/lib/transactions/types";
 import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
-import { Button } from "@/components/ui/button";
 import { assignedOptions } from "@/app/lib/transactions/data";
 import AssignClientModal from "./assign-client-modal";
 
@@ -97,7 +96,11 @@ export default function TransactionsTable() {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const { data: transactions } = useGetTransactionsQuery(
+  const {
+    data: transactions,
+    isLoading: loadingTransactions,
+    isFetching: fetchingTransactions,
+  } = useGetTransactionsQuery(
     {
       page: pageIndex + 1, // Current page
       limit: pageSize, // Amount of pages
@@ -143,12 +146,12 @@ export default function TransactionsTable() {
     },
   });
 
-  const handleTransactionsAssignment = async () => {
-    try {
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  // const handleTransactionsAssignment = async () => {
+  //   try {
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col gap-y-6.5">
@@ -168,6 +171,8 @@ export default function TransactionsTable() {
         columns={columns}
         table={table}
         withPagination
+        loading={loadingTransactions}
+        fetching={fetchingTransactions}
         bottomLeftComponent={
           table.getFilteredSelectedRowModel().rows.length > 0 && (
             <AssignClientModal
