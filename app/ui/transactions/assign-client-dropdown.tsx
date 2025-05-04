@@ -3,7 +3,7 @@
 import { useAccountId } from "@/app/context/account-provider";
 import { useGetClientsQuery } from "@/app/lib/clients/api";
 import { Client } from "@/app/lib/clients/types";
-import { useCreateTransactionMutation } from "@/app/lib/transactions/api";
+import { useUpdateTransactionMutation } from "@/app/lib/transactions/api";
 import { Transaction } from "@/app/lib/transactions/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,30 +24,26 @@ import React from "react";
 
 export default function AssignClientDropdown({
   transaction,
-  updateTable,
 }: {
   transaction: Partial<Transaction>;
-  updateTable: (client: Client) => void;
 }) {
   const { selectedAccountId } = useAccountId();
   const { data: clients, isLoading: loading } = useGetClientsQuery({
     limit: 0,
   });
-  const [createTransaction, { isLoading: assigningTransaction }] =
-    useCreateTransactionMutation();
+  const [updateTransaction, { isLoading: assigningTransaction }] =
+    useUpdateTransactionMutation();
   const [open, setOpen] = React.useState(false);
 
   const doAssignAndSaveTransaction = async (client: Client) => {
-    if (!selectedAccountId) return;
+    if (!selectedAccountId || !transaction.id) return;
     try {
-      // Lets save the transaction with a user id
-      await createTransaction({
+      // Lets update the transaction with a user id
+      await updateTransaction({
         ...transaction,
-        accountId: selectedAccountId,
+        transactionId: transaction.id,
         clientId: client.id,
       });
-      // This will basically update table data to show now that a user has been set to a transaction
-      updateTable(client);
     } catch (e) {
       console.log(e);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -22,6 +22,7 @@ import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import { assignedOptions } from "@/app/lib/transactions/data";
 import AssignClientModal from "./assign-client-modal";
+import AssignClientDropdown from "./assign-client-dropdown";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -43,6 +44,7 @@ const columns: ColumnDef<Transaction>[] = [
         aria-label="Select row"
       />
     ),
+    meta: { className: "w-10" },
     enableSorting: false,
     enableHiding: false,
   },
@@ -73,14 +75,6 @@ const columns: ColumnDef<Transaction>[] = [
       }).format(amount);
 
       return formatted;
-    },
-  },
-  {
-    accessorKey: "clientFullName",
-    header: "Cliente",
-    cell: ({ row }) => {
-      const clientId = row.getValue("clientFullName");
-      return clientId || "Sin asignar";
     },
   },
 ];
@@ -120,9 +114,21 @@ export default function TransactionsTable() {
     []
   );
 
+  const dynamicColumns = useMemo(() => {
+    const dynamicCols = [...columns];
+    dynamicCols.push({
+      accessorKey: "clientFullName",
+      header: "Cliente",
+      cell: ({ row }) => {
+        return <AssignClientDropdown transaction={row.original} />;
+      },
+    });
+    return dynamicCols;
+  }, []);
+
   const table = useReactTable({
     data: transactions?.data || [],
-    columns,
+    columns: dynamicColumns,
     pageCount: transactions?.pages,
     state: {
       columnFilters,
@@ -145,13 +151,6 @@ export default function TransactionsTable() {
       setPageSize(newPagination.pageSize);
     },
   });
-
-  // const handleTransactionsAssignment = async () => {
-  //   try {
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
 
   return (
     <div className="flex flex-col gap-y-6.5">

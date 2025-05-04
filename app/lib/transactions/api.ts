@@ -47,7 +47,16 @@ export const transactionsApi = api
             method: "GET",
           };
         },
-        providesTags: ["Transactions"],
+        providesTags: (result) =>
+          result
+            ? [
+                ...result.data.map(({ id }) => ({
+                  type: "Transactions" as const,
+                  id,
+                })),
+                "Transactions",
+              ]
+            : ["Transactions"],
       }),
       createTransaction: builder.mutation<{ id: string }, Partial<Transaction>>(
         {
@@ -70,12 +79,26 @@ export const transactionsApi = api
         }),
         invalidatesTags: ["Transactions"],
       }),
+      updateTransaction: builder.mutation<
+        { id: string },
+        { transactionId: number; clientId: number }
+      >({
+        query: ({ transactionId, clientId }) => ({
+          url: `/transactions/${transactionId}`,
+          method: "POST",
+          body: { clientId },
+        }),
+        invalidatesTags: ["Transactions"],
+      }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding
   });
 
 export const {
   useGetTransactionsQuery,
+  // Create
   useCreateTransactionMutation,
   useCreateBulkTransactionMutation,
+  // Update
+  useUpdateTransactionMutation,
 } = transactionsApi;

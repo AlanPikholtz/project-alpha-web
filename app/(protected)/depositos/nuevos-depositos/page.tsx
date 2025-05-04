@@ -1,5 +1,6 @@
 "use client";
 
+import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { mapStringToTransactions } from "@/app/lib/transactions/helpers";
 import { Transaction } from "@/app/lib/transactions/types";
 import AccountSelector from "@/app/ui/account-selector";
@@ -13,6 +14,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
@@ -33,6 +35,20 @@ export default function NewTransactionsPage() {
       transactions: "",
     },
   });
+
+  const { data: transactions, isLoading: loadingTransactions } =
+    useGetTransactionsQuery(
+      {
+        page: 1, // Current page
+        limit: 1, // Amount of pages
+        order: "desc",
+      },
+      {
+        refetchOnFocus: true,
+        refetchOnMountOrArgChange: true,
+        refetchOnReconnect: true,
+      }
+    );
 
   const pastedDataWatch = form.watch("transactions");
 
@@ -85,6 +101,7 @@ export default function NewTransactionsPage() {
     if (duplicatedTransactions.length === 0) return;
     setDuplicatedModalOpen(true);
   }, [duplicatedTransactions]);
+
   useEffect(() => {
     document.title = "Nuevos depósitos";
   }, []);
@@ -114,26 +131,40 @@ export default function NewTransactionsPage() {
       ) : null}
 
       {state === "initial" ? (
-        <Form {...form}>
-          <form className="h-full flex flex-col">
-            <FormField
-              control={form.control}
-              name="transactions"
-              render={({ field }) => (
-                <FormItem className="h-full">
-                  <FormControl>
-                    <Textarea
-                      className="resize-none"
-                      placeholder="Pegar depósitos"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+        <div className="flex flex-col h-full gap-y-10">
+          <Form {...form}>
+            <form className="h-full flex flex-col">
+              <FormField
+                control={form.control}
+                name="transactions"
+                render={({ field }) => (
+                  <FormItem className="h-full">
+                    <FormControl>
+                      <Textarea
+                        className="resize-none"
+                        placeholder="Pegar depósitos"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+
+          {loadingTransactions ? (
+            <Skeleton className="self-end w-[15rem] h-7" />
+          ) : null}
+          {!loadingTransactions && transactions?.data[0] ? (
+            <div className="flex self-end items-center gap-x-2.5">
+              <label className="text-[#71717A]">Última transacción</label>
+              <label>
+                {new Date(transactions?.data[0].date).toLocaleString("es-AR")}
+              </label>
+            </div>
+          ) : null}
+        </div>
       ) : (
         <>
           <NewTransactionsTable data={newTransactionsData} />

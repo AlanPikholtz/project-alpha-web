@@ -21,6 +21,7 @@ export interface Metrics {
       totalCommissions: number;
     }
   ];
-  totalDeposits: number;
-  totalCommissions: number;
+  totalDeposits: string;
+  totalCommissions: string;
+  unassignedDeposits: string;
 }

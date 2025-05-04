@@ -3,10 +3,10 @@ import { Metrics } from "./types";
 
 export const metricsApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getMetrics: builder.query<Metrics, void>({
-      query: () => {
+    getMetrics: builder.query<Metrics, { date: string }>({
+      query: ({ date }) => {
         return {
-          url: "/metrics",
+          url: `/metrics?date=${date}`,
           method: "GET",
         };
       },
@@ -15,4 +15,4 @@ export const metricsApi = api.injectEndpoints({
   overrideExisting: false, // It's better to keep this false unless overriding
 });
 
-export const { useGetMetricsQuery } = metricsApi;
+export const { useGetMetricsQuery, useLazyGetMetricsQuery } = metricsApi;

@@ -57,7 +57,16 @@ export default function CustomTable<TData, TValue>({
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead
+                        key={header.id}
+                        className={clsx(
+                          (
+                            header.column.columnDef.meta as {
+                              className?: string;
+                            }
+                          )?.className
+                        )}
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -84,7 +93,13 @@ export default function CustomTable<TData, TValue>({
                     onClick={() => onRowClick?.(row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        className={clsx(
+                          (cell.column.columnDef.meta as { className?: string })
+                            ?.className
+                        )}
+                        key={cell.id}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -99,7 +114,7 @@ export default function CustomTable<TData, TValue>({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    No se encontraron resultados.
                   </TableCell>
                 </TableRow>
               )}
