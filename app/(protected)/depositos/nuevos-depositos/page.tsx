@@ -4,6 +4,7 @@ import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { mapStringToTransactions } from "@/app/lib/transactions/helpers";
 import { Transaction } from "@/app/lib/transactions/types";
 import AccountSelector from "@/app/ui/account-selector";
+import BackButton from "@/app/ui/back-button";
 import DuplicatedTransactionsModal from "@/app/ui/transactions/duplicated-transactions-modal";
 import NewTransactionsTable from "@/app/ui/transactions/new-transactions-table";
 import { Button } from "@/components/ui/button";
@@ -17,8 +18,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -28,7 +27,6 @@ const formSchema = z.object({
 });
 
 export default function NewTransactionsPage() {
-  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -95,8 +93,6 @@ export default function NewTransactionsPage() {
     }
   };
 
-  const handleBack = () => router.back();
-
   useEffect(() => {
     if (duplicatedTransactions.length === 0) return;
     setDuplicatedModalOpen(true);
@@ -109,14 +105,7 @@ export default function NewTransactionsPage() {
   return (
     <div className="flex h-full flex-col gap-y-6">
       {/* Back button */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="rounded-full"
-        onClick={handleBack}
-      >
-        <ArrowLeft />
-      </Button>
+      <BackButton />
 
       {state === "initial" ? (
         <div className="flex items-center justify-between">

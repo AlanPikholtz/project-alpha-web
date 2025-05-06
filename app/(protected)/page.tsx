@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useLazyGetMetricsQuery } from "../lib/metrics/api";
 import ClientsPieChart from "../ui/metrics/clients-pie-chart";
 import MetricCard from "../ui/metrics/metric-card";
-import { format } from "date-fns";
 import SingleDatePicker from "../ui/transactions/filters/single-date-picker";
 
 export default function Dashboard() {

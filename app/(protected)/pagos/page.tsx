@@ -8,9 +8,8 @@ import React from "react";
 
 export default function PaymentsPage() {
   const router = useRouter();
-
   return (
-    <div>
+    <div className="flex flex-col gap-y-6.5">
       <Button
         className="self-start"
         onClick={() => router.push("/pagos/nuevo")}
