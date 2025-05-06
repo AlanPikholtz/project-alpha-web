@@ -2,15 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { PopoverTrigger } from "@radix-ui/react-popover";
+import clsx from "clsx";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import React from "react";
 
 export default function SingleDatePicker({
+  className,
   date,
   setDate,
 }: {
+  className?: string;
   date?: Date;
   setDate: (date: Date | undefined) => void;
 }) {
@@ -18,8 +21,11 @@ export default function SingleDatePicker({
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant={"outline"}
-          className="w-[260px] justify-start text-left font-normal"
+          variant="outline"
+          className={clsx(
+            "w-[260px] justify-start text-left font-normal",
+            className
+          )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? format(date, "dd/MM/yyyy") : <span>Seleccionar fecha</span>}

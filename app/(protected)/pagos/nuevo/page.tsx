@@ -1,25 +1,25 @@
 import BackButton from "@/app/ui/back-button";
-import NewClientForm from "@/app/ui/clients/new-client-form";
+import NewPaymentForm from "@/app/ui/payments/new-payment-form";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
 
 export const metadata = {
-  title: "Nuevo Cliente",
+  title: "Nuevo Pago",
 };
 
-export default function NewClientPage() {
+export default function NewPaymentPage() {
   return (
     <div className="flex h-full flex-col gap-y-5">
       <BackButton />
       {/* We should define h1, h2, etc. for this stuff */}
       <div className="flex flex-col gap-y-11">
         <label className="text-lg font-medium text-zinc-950 leading-7">
-          Nuevo cliente
+          Nuevo pago
         </label>
         <Separator />
       </div>
-      {/* New client form */}
-      <NewClientForm />
+      {/* New Payment form */}
+      <NewPaymentForm />
     </div>
   );
 }

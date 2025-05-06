@@ -52,7 +52,10 @@ export default function SideNav() {
         <SidebarContent className="px-2">
           <SidebarMenu>
             {menuItems.map((item) => {
-              const isActive = pathname === item.url;
+              const isActive =
+                item.url === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.url);
 
               return (
                 <SidebarMenuItem key={item.title}>
