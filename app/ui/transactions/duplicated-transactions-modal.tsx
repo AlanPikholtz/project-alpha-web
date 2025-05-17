@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-table";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
+import { formatNumber } from "@/app/lib/helpers";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
   {
@@ -39,13 +40,7 @@ const columns: ColumnDef<Partial<Transaction>>[] = [
     header: "Monto",
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
-      const formatted = new Intl.NumberFormat("es-AR", {
-        // Argetina formatting
-        style: "currency",
-        currency: "ARS",
-      }).format(amount);
-
-      return formatted;
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
     filterFn: (row, columnId, filterValue) => {
       const amount = row.getValue(columnId);

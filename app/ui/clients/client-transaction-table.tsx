@@ -18,6 +18,7 @@ import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import SortByFilter from "../transactions/filters/sort-by-filter";
 import { sortByOptions } from "@/app/lib/transactions/data";
+import { formatNumber } from "@/app/lib/helpers";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -40,13 +41,7 @@ const columns: ColumnDef<Transaction>[] = [
     header: "Monto",
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
-      const formatted = new Intl.NumberFormat("es-AR", {
-        // Argetina formatting
-        style: "currency",
-        currency: "ARS",
-      }).format(amount);
-
-      return formatted;
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
   {

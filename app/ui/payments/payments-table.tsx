@@ -11,13 +11,16 @@ import CustomTable from "../custom-table";
 import { useGetPaymentsQuery } from "@/app/lib/payments/api";
 import _ from "lodash";
 import { paymentMethodToString } from "@/app/lib/payments/helpers";
+import { formatNumber } from "@/app/lib/helpers";
 
 const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "paymentRequestDate",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("paymentRequestDate")).toLocaleString("es-AR");
+      const formatted = new Date(
+        row.getValue("paymentRequestDate")
+      ).toLocaleString("es-AR");
       return formatted;
     },
   },
@@ -26,17 +29,17 @@ const columns: ColumnDef<Payment>[] = [
     header: "Monto",
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
-      const formatted = new Intl.NumberFormat("es-AR", {
-        // Argetina formatting
-        style: "currency",
-        currency: "ARS",
-      }).format(amount);
-
-      return formatted;
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
   { accessorKey: "currency", header: "Moneda" },
-  { accessorKey: "method", header: "Metodo", cell: ({row}) => { return _.capitalize(paymentMethodToString(row.getValue("method")));}},
+  {
+    accessorKey: "method",
+    header: "Metodo",
+    cell: ({ row }) => {
+      return _.capitalize(paymentMethodToString(row.getValue("method")));
+    },
+  },
   { accessorKey: "clientId", header: "ID Cliente" },
 ];
 
@@ -45,15 +48,21 @@ export default function PaymentsTable() {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const { data: payments, isLoading: loadingPayments, isFetching:fetchingPayments } = useGetPaymentsQuery({
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-  }, {
-    refetchOnFocus: true,
-    refetchOnMountOrArgChange: true,
-    refetchOnReconnect: true,
-  })
-
+  const {
+    data: payments,
+    isLoading: loadingPayments,
+    isFetching: fetchingPayments,
+  } = useGetPaymentsQuery(
+    {
+      page: pageIndex + 1, // Current page
+      limit: pageSize, // Amount of pages
+    },
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    }
+  );
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
