@@ -39,7 +39,6 @@ export default function NewTransactionsPage() {
       {
         page: 1, // Current page
         limit: 1, // Amount of pages
-        order: "desc",
       },
       {
         refetchOnFocus: true,

@@ -90,6 +90,17 @@ export const transactionsApi = api
         }),
         invalidatesTags: ["Transactions"],
       }),
+      bulkUpdateTransaction: builder.mutation<
+        string,
+        { clientId: number; transactionsIds: number[] }
+      >({
+        query: ({ clientId, transactionsIds }) => ({
+          url: `/transactions/client/${clientId}`,
+          method: "PUT",
+          body: { transactionsIds },
+        }),
+        invalidatesTags: ["Transactions"],
+      }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding
   });
@@ -101,4 +112,5 @@ export const {
   useCreateBulkTransactionMutation,
   // Update
   useUpdateTransactionMutation,
+  useBulkUpdateTransactionMutation,
 } = transactionsApi;

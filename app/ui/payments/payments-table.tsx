@@ -8,13 +8,16 @@ import {
 } from "@tanstack/react-table";
 import React, { useState } from "react";
 import CustomTable from "../custom-table";
+import { useGetPaymentsQuery } from "@/app/lib/payments/api";
+import _ from "lodash";
+import { paymentMethodToString } from "@/app/lib/payments/helpers";
 
 const columns: ColumnDef<Payment>[] = [
   {
-    accessorKey: "date",
+    accessorKey: "paymentRequestDate",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
+      const formatted = new Date(row.getValue("paymentRequestDate")).toLocaleString("es-AR");
       return formatted;
     },
   },
@@ -33,7 +36,7 @@ const columns: ColumnDef<Payment>[] = [
     },
   },
   { accessorKey: "currency", header: "Moneda" },
-  { accessorKey: "method", header: "Metodo" },
+  { accessorKey: "method", header: "Metodo", cell: ({row}) => { return _.capitalize(paymentMethodToString(row.getValue("method")));}},
   { accessorKey: "clientId", header: "ID Cliente" },
 ];
 
@@ -42,24 +45,24 @@ export default function PaymentsTable() {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const payments: Payment[] = [
-    {
-      date: new Date().toISOString(),
-      amount: 123.45,
-      currency: "ARS",
-      method: "Efectivo",
-      clientId: "aupik",
-    },
-  ];
+  const { data: payments, isLoading: loadingPayments, isFetching:fetchingPayments } = useGetPaymentsQuery({
+    page: pageIndex + 1, // Current page
+    limit: pageSize, // Amount of pages
+  }, {
+    refetchOnFocus: true,
+    refetchOnMountOrArgChange: true,
+    refetchOnReconnect: true,
+  })
+
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
 
   const table = useReactTable({
-    data: payments,
+    data: payments?.data || [],
     columns,
-    // pageCount: clients?.pages,
+    pageCount: payments?.pages,
     state: {
       columnFilters,
       pagination: {
@@ -86,8 +89,8 @@ export default function PaymentsTable() {
     <CustomTable
       columns={columns}
       table={table}
-      // loading={loading}
-      // fetching={fetchingClients}
+      loading={loadingPayments}
+      fetching={fetchingPayments}
       withPagination
     />
   );

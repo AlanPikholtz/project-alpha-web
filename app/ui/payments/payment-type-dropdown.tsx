@@ -17,7 +17,7 @@ import { cn } from "@/app/lib/utils";
 
 const PAYMENT_TYPES = [
   { value: "cash", label: "Efectivo" },
-  { value: "wire", label: "Transferencia" },
+  { value: "transfer", label: "Transferencia" },
   { value: "card", label: "Tarjeta" },
 ];
 

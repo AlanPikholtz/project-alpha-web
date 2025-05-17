@@ -17,7 +17,7 @@ import DateRangeFilter from "./filters/date-range-filter";
 import StatusFilter from "./filters/status-filter";
 import CustomTable from "../custom-table";
 import { Transaction, TransactionStatus } from "@/app/lib/transactions/types";
-import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
+import {  useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import { assignedOptions } from "@/app/lib/transactions/data";
@@ -109,6 +109,7 @@ export default function TransactionsTable() {
       refetchOnReconnect: true,
     }
   );
+
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

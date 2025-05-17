@@ -5,6 +5,7 @@ import { useLazyGetMetricsQuery } from "../lib/metrics/api";
 import ClientsPieChart from "../ui/metrics/clients-pie-chart";
 import MetricCard from "../ui/metrics/metric-card";
 import SingleDatePicker from "../ui/transactions/filters/single-date-picker";
+import {  formatISO } from "date-fns";
 
 export default function Dashboard() {
   const [getMetrics, { data: metrics }] = useLazyGetMetricsQuery();
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const doGetMetrics = useCallback(async () => {
     if (!date) return;
     try {
-      await getMetrics({ date: date.toISOString() }).unwrap();
+      await getMetrics({ date: formatISO(date) }).unwrap();
     } catch (e) {
       console.log(e);
     }
