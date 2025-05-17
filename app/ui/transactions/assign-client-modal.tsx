@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useBulkUpdateTransactionMutation } from "@/app/lib/transactions/api";
+// import { useBulkUpdateTransactionMutation } from "@/app/lib/transactions/api";
 
 // Modal for assigning a client to >= 1 transactions
 export default function AssignClientModal({
@@ -28,10 +28,9 @@ export default function AssignClientModal({
   transactionsAmount: number;
 }) {
   const { data: clients } = useGetClientsQuery({});
-  const [bulkUpdateTransactions, {}] = useBulkUpdateTransactionMutation()
-  
-  const [selectedClientId, setSelectedClientId] = useState<number>();
+  // const [bulkUpdateTransactions, {}] = useBulkUpdateTransactionMutation()
 
+  // const [selectedClientId, setSelectedClientId] = useState<number>();
 
   return (
     <Dialog>
@@ -58,9 +57,9 @@ export default function AssignClientModal({
                   key={client.id}
                   className="cursor-pointer"
                   value={`${client.code}`}
-                  onSelect={() => {
-                    setSelectedClientId(client.id);
-                  }}
+                  // onSelect={() => {
+                  //   setSelectedClientId(client.id);
+                  // }}
                 >
                   <div className="flex flex-col gap-y-1">
                     {client.code}
