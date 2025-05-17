@@ -19,6 +19,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useBulkUpdateTransactionMutation } from "@/app/lib/transactions/api";
 
 // Modal for assigning a client to >= 1 transactions
 export default function AssignClientModal({
@@ -27,7 +28,10 @@ export default function AssignClientModal({
   transactionsAmount: number;
 }) {
   const { data: clients } = useGetClientsQuery({});
+  const [bulkUpdateTransactions, {}] = useBulkUpdateTransactionMutation()
+  
   const [selectedClientId, setSelectedClientId] = useState<number>();
+
 
   return (
     <Dialog>

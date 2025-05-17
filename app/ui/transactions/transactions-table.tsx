@@ -23,6 +23,7 @@ import _ from "lodash";
 import { assignedOptions } from "@/app/lib/transactions/data";
 import AssignClientModal from "./assign-client-modal";
 import AssignClientDropdown from "./assign-client-dropdown";
+import { formatNumber } from "@/app/lib/helpers";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -68,13 +69,7 @@ const columns: ColumnDef<Transaction>[] = [
     header: "Monto",
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
-      const formatted = new Intl.NumberFormat("es-AR", {
-        // Argetina formatting
-        style: "currency",
-        currency: "ARS",
-      }).format(amount);
-
-      return formatted;
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
 ];

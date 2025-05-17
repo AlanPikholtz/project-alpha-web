@@ -1,7 +1,11 @@
+export type PaymentMethod = "card" | "cash" | "transfer";
+
 export interface Payment {
-  date: string;
-  amount: number;
+  id: number;
+  paymentRequestDate: string;
+  amount: string;
   currency: string;
-  method: string;
-  clientId: string;
+  method: PaymentMethod;
+  clientId: number;
+  createdAt: string;
 }

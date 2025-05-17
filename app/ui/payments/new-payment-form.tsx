@@ -16,35 +16,43 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import SingleDatePicker from "../transactions/filters/single-date-picker";
 import PaymentTypeDropdown from "./payment-type-dropdown";
+import { useCreatePaymentMutation } from "@/app/lib/payments/api";
+import { Payment, PaymentMethod } from "@/app/lib/payments/types";
+import ClientSelector from "../client-selector";
 
 const formSchema = z.object({
   clientId: z.string().nonempty("Ingrese el ID del cliente"),
-  type: z.string().nonempty("Ingrese el Nombre"),
+  method: z.string().nonempty("Ingrese el tipo"),
   amount: z.string().nonempty("Ingrese el Monto"),
-  date: z.date(),
+  paymentRequestDate: z.date(),
 });
 
 export default function NewPaymentForm() {
   const router = useRouter();
 
-  // const [createPayment, { isLoading: loading }] = useCreateClientMutation();
+  const [createPayment, { isLoading: loading }] = useCreatePaymentMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       clientId: "",
-      type: "",
+      method: "",
       amount: "",
-      date: new Date(),
+      paymentRequestDate: new Date(),
     },
   });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const { clientId, amount, method, paymentRequestDate } = data;
     try {
-      // await createClient({
-      //   accountId: selectedAccountId,
-      //   ...data,
-      // }).unwrap();
+      const newPayment: Partial<Payment> = {
+        amount,
+        clientId: +clientId,
+        method: method as PaymentMethod,
+        paymentRequestDate: paymentRequestDate.toISOString(),
+        currency: "ARS", // Default for now
+      };
+      await createPayment(newPayment).unwrap();
       // Redirect
       router.back();
     } catch (error) {
@@ -66,7 +74,10 @@ export default function NewPaymentForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Id del cliente" {...field} />
+                    <ClientSelector
+                      value={field.value}
+                      setValue={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -74,7 +85,7 @@ export default function NewPaymentForm() {
             />
             <FormField
               control={form.control}
-              name="type"
+              name="method"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -90,18 +101,21 @@ export default function NewPaymentForm() {
             <FormField
               control={form.control}
               name="amount"
-              render={({ field }) => (
-                <FormItem>
+              render={({ field }) => {
+                return (
                   <FormControl>
-                    <Input placeholder="Monto" type="number" {...field} />
+                    <Input
+                      placeholder="$ 0,00"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+                );
+              }}
             />
             <FormField
               control={form.control}
-              name="date"
+              name="paymentRequestDate"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -118,7 +132,9 @@ export default function NewPaymentForm() {
           </div>
         </div>
         <div className="flex gap-3.5">
-          <Button type="submit">Guardar</Button>
+          <Button type="submit" loading={loading}>
+            Guardar
+          </Button>
         </div>
       </form>
     </Form>
