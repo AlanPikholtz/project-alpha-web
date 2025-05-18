@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,21 +19,42 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-// import { useBulkUpdateTransactionMutation } from "@/app/lib/transactions/api";
+import { useBulkUpdateTransactionMutation } from "@/app/lib/transactions/api";
+import { Transaction } from "@/app/lib/transactions/types";
+import { useAccountId } from "@/app/context/account-provider";
+import ApiErrorMessage from "../api-error-message";
 
 // Modal for assigning a client to >= 1 transactions
 export default function AssignClientModal({
-  transactionsAmount,
+  transactions,
 }: {
-  transactionsAmount: number;
+  transactions: Transaction[];
 }) {
-  const { data: clients } = useGetClientsQuery({});
-  // const [bulkUpdateTransactions, {}] = useBulkUpdateTransactionMutation()
+  const { selectedAccountId } = useAccountId();
 
-  // const [selectedClientId, setSelectedClientId] = useState<number>();
+  const [open, setOpen] = useState<boolean>(false);
+
+  const { data: clients } = useGetClientsQuery(
+    { accountId: selectedAccountId },
+    { skip: !selectedAccountId }
+  );
+  const [bulkUpdateTransactions, { error: errorUpdating }] =
+    useBulkUpdateTransactionMutation();
+
+  const doBulkUpdate = async (clientId: number) => {
+    try {
+      await bulkUpdateTransactions({
+        clientId,
+        transactionIds: transactions.map((x) => x.id),
+      }).unwrap();
+      setOpen(false);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary">Asignar depósitos</Button>
       </DialogTrigger>
@@ -41,8 +62,8 @@ export default function AssignClientModal({
         <DialogHeader>
           <DialogTitle>Asignar depósitos</DialogTitle>
           <DialogDescription>
-            {transactionsAmount > 1
-              ? `Elija el cliente al cual se le asignaran los ${transactionsAmount} depósitos.`
+            {transactions.length > 1
+              ? `Elija el cliente al cual se le asignaran los ${transactions.length} depósitos.`
               : "Elija el cliente al cual se le asignara el depósito."}
           </DialogDescription>
         </DialogHeader>
@@ -57,9 +78,7 @@ export default function AssignClientModal({
                   key={client.id}
                   className="cursor-pointer"
                   value={`${client.code}`}
-                  // onSelect={() => {
-                  //   setSelectedClientId(client.id);
-                  // }}
+                  onSelect={() => doBulkUpdate(client.id)}
                 >
                   <div className="flex flex-col gap-y-1">
                     {client.code}
@@ -72,6 +91,8 @@ export default function AssignClientModal({
             </CommandGroup>
           </CommandList>
         </Command>
+
+        {errorUpdating && <ApiErrorMessage error={errorUpdating} />}
       </DialogContent>
     </Dialog>
   );

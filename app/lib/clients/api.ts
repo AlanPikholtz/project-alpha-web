@@ -6,13 +6,17 @@ export const clientsApi = api
   .enhanceEndpoints({ addTagTypes: ["Clients"] })
   .injectEndpoints({
     endpoints: (builder) => ({
-      getClients: builder.query<PagedDataResponse<Client[]>, PagedQueryParams>({
-        query: ({ limit = 0, page }) => {
+      getClients: builder.query<
+        PagedDataResponse<Client[]>,
+        { accountId?: number | null } & PagedQueryParams
+      >({
+        query: ({ accountId, limit = 0, page }) => {
           const searchParams = new URLSearchParams();
+          if (accountId) searchParams.append("accountId", accountId.toString());
           if (limit) searchParams.append("limit", limit.toString());
           if (page) searchParams.append("page", page.toString());
           return {
-            url: "/clients",
+            url: `/clients?${searchParams.toString()}`,
             method: "GET",
           };
         },

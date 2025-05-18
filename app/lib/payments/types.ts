@@ -7,5 +7,6 @@ export interface Payment {
   currency: string;
   method: PaymentMethod;
   clientId: number;
+  clientCode: string;
   createdAt: string;
 }

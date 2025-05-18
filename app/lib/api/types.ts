@@ -10,3 +10,9 @@ export interface PagedQueryParams {
   limit?: number;
   page?: number;
 }
+
+export type ApiError = {
+  statusCode: number;
+  error: string;
+  messages: string[];
+};

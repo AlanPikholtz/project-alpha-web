@@ -16,6 +16,7 @@ import {
 import React from "react";
 import { useGetClientsQuery } from "../lib/clients/api";
 import { Input } from "@/components/ui/input";
+import { useAccountId } from "../context/account-provider";
 
 export default function ClientSelector({
   value,
@@ -24,10 +25,16 @@ export default function ClientSelector({
   value: string;
   setValue: (value: string) => void;
 }) {
+  const { selectedAccountId } = useAccountId();
+
   const [open, setOpen] = React.useState(false);
-  const { data: clients, isLoading: loading } = useGetClientsQuery({
-    limit: 0,
-  });
+  const { data: clients, isLoading: loading } = useGetClientsQuery(
+    {
+      accountId: selectedAccountId,
+      limit: 0,
+    },
+    { skip: !selectedAccountId }
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

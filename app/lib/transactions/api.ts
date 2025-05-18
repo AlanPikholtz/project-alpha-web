@@ -10,6 +10,7 @@ export const transactionsApi = api
       getTransactions: builder.query<
         PagedDataResponse<Transaction[]>,
         {
+          accountId?: number | null;
           clientId?: number;
           status?: "assigned" | "unassigned";
           amount?: number;
@@ -22,6 +23,7 @@ export const transactionsApi = api
         }
       >({
         query: ({
+          accountId,
           clientId,
           status,
           amount,
@@ -33,6 +35,7 @@ export const transactionsApi = api
           page,
         }) => {
           const searchParams = new URLSearchParams();
+          if (accountId) searchParams.append("accountId", accountId.toString());
           if (clientId) searchParams.append("clientId", clientId.toString());
           if (status) searchParams.append("status", status.toString());
           if (amount) searchParams.append("amount", amount.toString());
@@ -92,12 +95,12 @@ export const transactionsApi = api
       }),
       bulkUpdateTransaction: builder.mutation<
         string,
-        { clientId: number; transactionsIds: number[] }
+        { clientId: number; transactionIds: number[] }
       >({
-        query: ({ clientId, transactionsIds }) => ({
+        query: ({ clientId, transactionIds }) => ({
           url: `/transactions/client/${clientId}`,
           method: "PUT",
-          body: { transactionsIds },
+          body: { transactionIds },
         }),
         invalidatesTags: ["Transactions"],
       }),
