@@ -20,9 +20,11 @@ import { useAccountId } from "../context/account-provider";
 
 export default function ClientSelector({
   value,
+  allClients = false,
   setValue,
 }: {
   value: string;
+  allClients?: boolean;
   setValue: (value: string) => void;
 }) {
   const { selectedAccountId } = useAccountId();
@@ -30,7 +32,7 @@ export default function ClientSelector({
   const [open, setOpen] = React.useState(false);
   const { data: clients, isLoading: loading } = useGetClientsQuery(
     {
-      accountId: selectedAccountId,
+      accountId: !allClients ? selectedAccountId : undefined,
       limit: 0,
     },
     { skip: !selectedAccountId }

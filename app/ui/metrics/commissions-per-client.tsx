@@ -21,7 +21,7 @@ export default function CommissionsPerClient({
     <Card className="flex-1 h-full">
       <CardHeader>
         <CardTitle className="text-md font-normal">
-          Comisiones por clientes.
+          Comisiones por clientes
         </CardTitle>
       </CardHeader>
 

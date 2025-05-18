@@ -21,7 +21,7 @@ export default function ClientsPerAccount({
     <Card className="flex-1 h-full">
       <CardHeader>
         <CardTitle className="text-md font-normal">
-          Clientes por cuenta.
+          Clientes por cuenta
         </CardTitle>
       </CardHeader>
 

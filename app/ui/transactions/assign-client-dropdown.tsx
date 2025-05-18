@@ -2,8 +2,7 @@
 
 import { useAccountId } from "@/app/context/account-provider";
 import { useGetClientsQuery } from "@/app/lib/clients/api";
-import { Client } from "@/app/lib/clients/types";
-import { useUpdateTransactionMutation } from "@/app/lib/transactions/api";
+import { useBulkUpdateTransactionMutation } from "@/app/lib/transactions/api";
 import { Transaction } from "@/app/lib/transactions/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,25 +35,24 @@ export default function AssignClientDropdown({
     { skip: !selectedAccountId }
   );
 
-  const [updateTransaction, { isLoading: assigningTransaction }] =
-    useUpdateTransactionMutation();
+  const [bulkUpdateTransactions, { isLoading: updatingLoading }] =
+    useBulkUpdateTransactionMutation();
   const [open, setOpen] = React.useState(false);
 
-  const doAssignAndSaveTransaction = async (client: Client) => {
-    if (!selectedAccountId || !transaction.id) return;
+  const doBulkUpdate = async (clientId: number) => {
+    if (!transaction.id) return;
     try {
-      // Lets update the transaction with a user id
-      await updateTransaction({
-        ...transaction,
-        transactionId: transaction.id,
-        clientId: client.id,
-      });
+      await bulkUpdateTransactions({
+        clientId,
+        transactionIds: [transaction.id],
+      }).unwrap();
+      setOpen(false);
     } catch (e) {
       console.log(e);
     }
   };
 
-  if (assigningTransaction) {
+  if (updatingLoading) {
     return (
       <div className="h-10 flex items-center">
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -95,8 +93,7 @@ export default function AssignClientDropdown({
                   value={`${client.code}`}
                   onSelect={(currentValue) => {
                     console.log({ currentValue });
-                    doAssignAndSaveTransaction(client);
-                    setOpen(false);
+                    doBulkUpdate(client.id);
                   }}
                 >
                   <div className="flex flex-col gap-y-1">

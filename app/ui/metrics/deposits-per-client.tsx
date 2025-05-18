@@ -21,7 +21,7 @@ export default function DepositsPerClient({
     <Card className="flex-1 h-full">
       <CardHeader>
         <CardTitle className="text-md font-normal">
-          Depositos por clientes.
+          Depositos por clientes
         </CardTitle>
       </CardHeader>
 
@@ -39,7 +39,10 @@ export default function DepositsPerClient({
                 <TableRow key={x.clientId}>
                   <TableCell>{x.clientFullName}</TableCell>
                   <TableCell className="text-right">
-                    {formatNumber(x.totalDeposits)}
+                    {formatNumber(x.totalDeposits, {
+                      style: "currency",
+                      currency: "ARS",
+                    })}
                   </TableCell>
                 </TableRow>
               ))}

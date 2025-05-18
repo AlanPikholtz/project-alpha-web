@@ -6,5 +6,5 @@ export const assignedOptions = [
 
 export const sortByOptions = [
   { label: "Fecha de asignación", value: "assignedAt" },
-  { label: "Fecha de depósito", value: "createdAt" },
+  { label: "Fecha de depósito", value: "date" },
 ];

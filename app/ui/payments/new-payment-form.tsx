@@ -75,6 +75,7 @@ export default function NewPaymentForm() {
                 <FormItem>
                   <FormControl>
                     <ClientSelector
+                      allClients
                       value={field.value}
                       setValue={field.onChange}
                     />
@@ -106,6 +107,7 @@ export default function NewPaymentForm() {
                   <FormControl>
                     <Input
                       placeholder="$ 0,00"
+                      type="number"
                       value={field.value}
                       onChange={field.onChange}
                     />

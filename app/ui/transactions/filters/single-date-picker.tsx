@@ -29,6 +29,7 @@ export default function SingleDatePicker({
   withDeleteButton?: boolean;
   setDate: (date: Date | undefined) => void;
 }) {
+  const [open, setOpen] = useState<boolean>(false);
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
 
@@ -49,7 +50,7 @@ export default function SingleDatePicker({
   ];
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -93,7 +94,7 @@ export default function SingleDatePicker({
               {months.map((monthName, index) => (
                 <Button
                   key={monthName}
-                  variant="outline"
+                  variant={"outline"}
                   className="w-full"
                   onClick={() => {
                     const selectedMonth = new Date();
@@ -101,6 +102,7 @@ export default function SingleDatePicker({
                     selectedMonth.setMonth(index);
                     selectedMonth.setDate(1);
                     setDate(selectedMonth);
+                    setOpen(false);
                   }}
                 >
                   {monthName}
@@ -116,7 +118,10 @@ export default function SingleDatePicker({
             numberOfMonths={2}
             defaultMonth={date}
             locale={es}
-            onSelect={setDate}
+            onSelect={(date) => {
+              setDate(date);
+              setOpen(false);
+            }}
           />
         )}
         {withDeleteButton && (
@@ -124,7 +129,10 @@ export default function SingleDatePicker({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setDate(undefined)}
+              onClick={() => {
+                setDate(undefined);
+                setOpen(false);
+              }}
             >
               Borrar
             </Button>
