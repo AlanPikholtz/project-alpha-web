@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { useGetClientByIdQuery } from "@/app/lib/clients/api";
 import { Separator } from "@/components/ui/separator";
 import ClientTransactionTable from "@/app/ui/clients/client-transaction-table";
+import { formatNumber } from "@/app/lib/helpers";
+import BackButton from "@/app/ui/back-button";
 
 export default function ClientPage() {
   const { id } = useParams(); // Get the dynamic ID from the URL
@@ -14,17 +16,15 @@ export default function ClientPage() {
 
   const formattedBalance = useMemo(() => {
     if (!client) return;
-    const formatted = new Intl.NumberFormat("es-AR", {
-      // Argetina formatting
+    return formatNumber(+client.balance, {
       style: "currency",
       currency: "ARS",
-    }).format(+client.balance);
-
-    return formatted;
+    });
   }, [client]);
 
   return (
     <div className="flex h-full flex-col gap-y-5">
+      <BackButton />
       {/* We should define h1, h2, etc. for this stuff */}
       <div className="flex flex-col gap-y-11">
         <div className="flex items-center justify-between">

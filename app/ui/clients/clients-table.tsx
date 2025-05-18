@@ -38,6 +38,7 @@ export default function ClientsTable() {
     isLoading: loading,
     isFetching: fetchingClients,
   } = useGetClientsQuery({
+    // accountId: selectedAccountId,
     page: pageIndex + 1, // Current page
     limit: pageSize, // Amount of pages
   });

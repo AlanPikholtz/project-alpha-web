@@ -24,6 +24,7 @@ import { assignedOptions } from "@/app/lib/transactions/data";
 import AssignClientModal from "./assign-client-modal";
 import AssignClientDropdown from "./assign-client-dropdown";
 import { formatNumber } from "@/app/lib/helpers";
+import { useAccountId } from "@/app/context/account-provider";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -75,6 +76,7 @@ const columns: ColumnDef<Transaction>[] = [
 ];
 
 export default function TransactionsTable() {
+  const { selectedAccountId } = useAccountId();
   // Filters
   const [amountFilter, setAmountFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<
@@ -91,10 +93,11 @@ export default function TransactionsTable() {
     isFetching: fetchingTransactions,
   } = useGetTransactionsQuery(
     {
-      page: pageIndex + 1, // Current page
-      limit: pageSize, // Amount of pages
+      accountId: selectedAccountId,
       amount: +amountFilter,
       status: statusFilter,
+      page: pageIndex + 1, // Current page
+      limit: pageSize, // Amount of pages
       from: dateRange?.from?.toISOString(),
       to: dateRange?.to?.toISOString(),
     },
@@ -102,6 +105,7 @@ export default function TransactionsTable() {
       refetchOnFocus: true,
       refetchOnMountOrArgChange: true,
       refetchOnReconnect: true,
+      skip: !selectedAccountId,
     }
   );
 
@@ -170,9 +174,9 @@ export default function TransactionsTable() {
         bottomLeftComponent={
           table.getFilteredSelectedRowModel().rows.length > 0 && (
             <AssignClientModal
-              transactionsAmount={
-                table.getFilteredSelectedRowModel().rows.length
-              }
+              transactions={table
+                .getFilteredSelectedRowModel()
+                .rows.map((row) => row.original)}
             />
           )
         }

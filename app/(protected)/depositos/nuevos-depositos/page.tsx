@@ -1,5 +1,6 @@
 "use client";
 
+import { useAccountId } from "@/app/context/account-provider";
 import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { mapStringToTransactions } from "@/app/lib/transactions/helpers";
 import { Transaction } from "@/app/lib/transactions/types";
@@ -27,6 +28,8 @@ const formSchema = z.object({
 });
 
 export default function NewTransactionsPage() {
+  const { selectedAccountId } = useAccountId();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,6 +40,7 @@ export default function NewTransactionsPage() {
   const { data: transactions, isLoading: loadingTransactions } =
     useGetTransactionsQuery(
       {
+        accountId: selectedAccountId,
         page: 1, // Current page
         limit: 1, // Amount of pages
       },

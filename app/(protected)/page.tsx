@@ -66,7 +66,7 @@ export default function Dashboard() {
             />
             <MetricCard
               title="Comisiones totales"
-              value={formatNumber(150000000000, {
+              value={formatNumber(+(metrics?.totalCommissions || 0), {
                 style: "currency",
                 currency: "ARS",
               })}

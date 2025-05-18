@@ -40,7 +40,7 @@ const columns: ColumnDef<Payment>[] = [
       return _.capitalize(paymentMethodToString(row.getValue("method")));
     },
   },
-  { accessorKey: "clientId", header: "ID Cliente" },
+  { accessorKey: "clientCode", header: "Codigo de cliente" },
 ];
 
 export default function PaymentsTable() {

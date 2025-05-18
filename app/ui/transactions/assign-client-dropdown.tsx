@@ -28,9 +28,14 @@ export default function AssignClientDropdown({
   transaction: Partial<Transaction>;
 }) {
   const { selectedAccountId } = useAccountId();
-  const { data: clients, isLoading: loading } = useGetClientsQuery({
-    limit: 0,
-  });
+  const { data: clients, isLoading: loading } = useGetClientsQuery(
+    {
+      accountId: selectedAccountId,
+      limit: 0,
+    },
+    { skip: !selectedAccountId }
+  );
+
   const [updateTransaction, { isLoading: assigningTransaction }] =
     useUpdateTransactionMutation();
   const [open, setOpen] = React.useState(false);

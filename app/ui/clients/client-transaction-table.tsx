@@ -62,6 +62,7 @@ const columns: ColumnDef<Transaction>[] = [
 
 export default function ClientTransactionTable() {
   const { id } = useParams(); // Get the dynamic ID from the URL
+
   const { exportToExcel } = useExcel();
 
   // Filters
@@ -117,9 +118,17 @@ export default function ClientTransactionTable() {
 
   const handleExcelExport = () => {
     if (!transactions || transactions.data.length === 0) return;
-    exportToExcel(transactions?.data, "Clientes");
-  };
 
+    const exportData = transactions.data.map((t) => ({
+      "Id de cliente": t.clientId,
+      "Nombre completo": t.clientFullName,
+      Monto: t.amount,
+      Fecha: new Date(t.date).toLocaleDateString("es-AR"),
+      Tipo: transactionTypeToString(t.type),
+    }));
+
+    exportToExcel(exportData, "Transacciones");
+  };
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
