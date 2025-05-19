@@ -1,4 +1,4 @@
-export type TransactionType = "deposit" | "withdrawal" | "exchange";
+export type TransactionType = "deposit" | "withdrawal" | "exchange" | "payment";
 export interface Transaction {
   id: number;
   clientId: number;

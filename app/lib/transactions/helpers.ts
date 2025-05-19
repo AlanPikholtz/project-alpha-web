@@ -94,6 +94,8 @@ export const transactionTypeToString = (type: TransactionType): string => {
       return "retiro";
     case "exchange":
       return "conversión";
+    case "payment":
+      return "Pago";
     default:
       return "depósito";
   }
