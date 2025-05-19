@@ -35,7 +35,12 @@ export default function ClientSelector({
       accountId: !allClients ? selectedAccountId : undefined,
       limit: 0,
     },
-    { skip: !selectedAccountId }
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+      skip: !selectedAccountId,
+    }
   );
 
   return (

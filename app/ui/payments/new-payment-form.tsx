@@ -22,7 +22,7 @@ import ClientSelector from "../client-selector";
 import { toast } from "sonner";
 
 const formSchema = z.object({
-  clientId: z.string().nonempty("Ingrese el ID del cliente"),
+  clientId: z.string().nonempty("Ingrese el codigo del cliente"),
   method: z.string().nonempty("Ingrese el tipo"),
   amount: z.string().nonempty("Ingrese el Monto"),
   paymentRequestDate: z.date(),
