@@ -1,4 +1,4 @@
-import { SortBy, Transaction } from "@/app/lib/transactions/types";
+import { SortBy } from "@/app/lib/transactions/types";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,7 +11,6 @@ import { DateRange } from "react-day-picker";
 import DateRangeFilter from "../transactions/filters/date-range-filter";
 import CustomTable from "../custom-table";
 import { useParams } from "next/navigation";
-import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import useExcel from "@/app/hooks/useExcel";
 import { Button } from "@/components/ui/button";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
@@ -19,9 +18,10 @@ import _ from "lodash";
 import SortByFilter from "../transactions/filters/sort-by-filter";
 import { sortByOptions } from "@/app/lib/transactions/data";
 import { formatNumber } from "@/app/lib/helpers";
-import { Client } from "@/app/lib/clients/types";
+import { Client, Operation } from "@/app/lib/clients/types";
+import { useGetClientOperationsQuery } from "@/app/lib/clients/api";
 
-const columns: ColumnDef<Transaction>[] = [
+const columns: ColumnDef<Operation>[] = [
   {
     accessorKey: "date",
     header: "Fecha/Hora",
@@ -50,6 +50,7 @@ const columns: ColumnDef<Transaction>[] = [
     header: "A Cliente",
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("clientAmount"));
+      if (_.isNaN(amount)) return "-";
       const formatted = new Intl.NumberFormat("es-AR", {
         // Argetina formatting
         style: "currency",
@@ -81,24 +82,25 @@ export default function ClientTransactionTable({
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const { data: transactions } = useGetTransactionsQuery({
-    clientId: id as unknown as number,
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-    from: dateRange?.from?.toISOString(),
-    to: dateRange?.to?.toISOString(),
-    sort: sortByFilter,
-    // status: typeFilter,
-  });
+  const { data: operations, isLoading: loadingOperations } =
+    useGetClientOperationsQuery({
+      clientId: id as unknown as number,
+      page: pageIndex + 1, // Current page
+      limit: pageSize, // Amount of pages
+      from: dateRange?.from?.toISOString(),
+      to: dateRange?.to?.toISOString(),
+      sort: sortByFilter,
+      // status: typeFilter,
+    });
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
 
   const table = useReactTable({
-    data: transactions?.data || [],
+    data: operations?.data || [],
     columns,
-    pageCount: transactions?.pages,
+    pageCount: operations?.pages,
     state: {
       columnFilters,
       pagination: {
@@ -122,11 +124,10 @@ export default function ClientTransactionTable({
   });
 
   const handleExcelExport = () => {
-    if (!transactions || transactions.data.length === 0 || !client) return;
+    if (!operations || operations.data.length === 0 || !client) return;
 
-    const exportData = transactions.data.map((t) => ({
-      "Id de cliente": t.clientId,
-      "Nombre completo": t.clientFullName,
+    const exportData = operations.data.map((t) => ({
+      "Nombre completo": `${client.firstName} ${client.lastName}`,
       Monto: t.amount,
       Fecha: new Date(t.date).toLocaleDateString("es-AR"),
       Tipo: transactionTypeToString(t.type),
@@ -156,11 +157,12 @@ export default function ClientTransactionTable({
       <CustomTable
         columns={columns}
         table={table}
+        loading={loadingOperations}
         withPagination
         bottomLeftComponent={
           <Button
             className="self-start"
-            disabled={transactions && transactions?.data.length === 0}
+            disabled={operations && operations?.data.length === 0}
             onClick={handleExcelExport}
           >
             Exportar

@@ -1,6 +1,7 @@
 import api from "../api/api";
 import { PagedDataResponse, PagedQueryParams } from "../api/types";
-import { Client } from "./types";
+import { SortBy } from "../transactions/types";
+import { Client, Operation } from "./types";
 
 export const clientsApi = api
   .enhanceEndpoints({ addTagTypes: ["Clients"] })
@@ -73,6 +74,23 @@ export const clientsApi = api
         },
         invalidatesTags: ["Clients"],
       }),
+      getClientOperations: builder.query<
+        PagedDataResponse<Operation[]>,
+        {
+          clientId: number;
+          from?: string;
+          to?: string;
+          sort?: SortBy;
+        } & PagedQueryParams
+      >({
+        query: ({ clientId }) => {
+          return {
+            url: `/clients/${clientId}/operations`,
+            method: "GET",
+          };
+        },
+        providesTags: ["Clients"],
+      }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding
   });
@@ -83,4 +101,6 @@ export const {
   useLazyGetClientByIdQuery,
   useCreateClientMutation,
   useUpdateClientMutation,
+  // Operations
+  useGetClientOperationsQuery,
 } = clientsApi;
