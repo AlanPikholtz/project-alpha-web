@@ -7,9 +7,13 @@ import { Separator } from "@/components/ui/separator";
 import ClientTransactionTable from "@/app/ui/clients/client-transaction-table";
 import { formatNumber } from "@/app/lib/helpers";
 import BackButton from "@/app/ui/back-button";
+import { EditIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ClientPage() {
   const { id } = useParams(); // Get the dynamic ID from the URL
+  const router = useRouter();
+
   const { data: client } = useGetClientByIdQuery({
     id: id as unknown as number,
   });
@@ -28,9 +32,15 @@ export default function ClientPage() {
       {/* We should define h1, h2, etc. for this stuff */}
       <div className="flex flex-col gap-y-11">
         <div className="flex items-center justify-between">
-          <label className="text-xl font-medium text-zinc-950 leading-7">
-            {client?.firstName} {client?.lastName}
-          </label>
+          <div
+            className="flex flex-row items-center gap-x-2 hover:underline hover:cursor-pointer"
+            onClick={() => router.push(`/clientes/${id}/editar`)}
+          >
+            <label className="text-xl font-medium text-zinc-950 leading-7">
+              {client?.firstName} {client?.lastName}
+            </label>
+            <EditIcon className="text-zinc-950" size={18} />
+          </div>
 
           <label className="text-xl font-medium text-zinc-950 leading-7">
             <span className="text-[#71717A]">Saldo Actual:</span> AR

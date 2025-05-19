@@ -14,7 +14,7 @@ export default function ClientsPage() {
   }, []);
 
   return (
-    <div>
+    <div className="flex flex-col gap-y-4">
       <Button
         className="self-start"
         onClick={() => router.push("/clientes/nuevo")}

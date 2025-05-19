@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
-import { Input } from "../../../components/ui/input";
 
 import CustomTable from "../custom-table";
 import { Client } from "@/app/lib/clients/types";
@@ -27,7 +26,7 @@ export default function ClientsTable() {
   const router = useRouter();
 
   // Filters
-  const [search, setSearch] = useState<string>("");
+  // const [search, setSearch] = useState<string>("");
 
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -87,14 +86,14 @@ export default function ClientsTable() {
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
-      <div className="flex gap-4 justify-between items-center py-4">
+      {/* <div className="flex gap-4 justify-between items-center py-4">
         <Input
           className="max-w-sm"
-          placeholder="Buscar monto"
+          placeholder="Buscar cliente"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-      </div>
+      </div> */}
       {/* Table */}
       <CustomTable
         columns={columns}

@@ -57,6 +57,22 @@ export const clientsApi = api
         },
         invalidatesTags: ["Clients"],
       }),
+      updateClient: builder.mutation<string, Partial<Client>>({
+        query: ({ id, firstName, lastName, commission, notes, accountId }) => {
+          return {
+            url: `/clients/${id}`,
+            method: "PUT",
+            body: {
+              accountId, // Account where the user is associated to
+              firstName,
+              lastName,
+              commission,
+              notes,
+            },
+          };
+        },
+        invalidatesTags: ["Clients"],
+      }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding
   });
@@ -66,4 +82,5 @@ export const {
   useGetClientByIdQuery,
   useLazyGetClientByIdQuery,
   useCreateClientMutation,
+  useUpdateClientMutation,
 } = clientsApi;
