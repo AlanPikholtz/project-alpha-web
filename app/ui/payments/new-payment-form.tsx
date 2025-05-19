@@ -19,6 +19,7 @@ import PaymentTypeDropdown from "./payment-type-dropdown";
 import { useCreatePaymentMutation } from "@/app/lib/payments/api";
 import { Payment, PaymentMethod } from "@/app/lib/payments/types";
 import ClientSelector from "../client-selector";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   clientId: z.string().nonempty("Ingrese el ID del cliente"),
@@ -55,6 +56,8 @@ export default function NewPaymentForm() {
       await createPayment(newPayment).unwrap();
       // Redirect
       router.back();
+      // Show success toast
+      toast("El pago ha sido registrado.");
     } catch (error) {
       console.log(error);
     }

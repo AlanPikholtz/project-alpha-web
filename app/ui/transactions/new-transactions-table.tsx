@@ -21,6 +21,7 @@ import { useCreateBulkTransactionMutation } from "@/app/lib/transactions/api";
 import { useAccountId } from "@/app/context/account-provider";
 import { useRouter } from "next/navigation";
 import { formatNumber } from "@/app/lib/helpers";
+import { toast } from "sonner";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
   {
@@ -90,7 +91,10 @@ export default function NewTransactionsTable({
         transactions: data,
       }).unwrap();
 
+      // Redirect
       router.back();
+      // Toast
+      toast("Depositos guardados.");
     } catch (e) {
       console.log(e);
     }

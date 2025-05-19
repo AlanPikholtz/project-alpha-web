@@ -17,6 +17,7 @@ import { Textarea } from "../../../components/ui/textarea";
 import AccountSelector from "../account-selector";
 import { useCreateClientMutation } from "@/app/lib/clients/api";
 import { useAccountId } from "@/app/context/account-provider";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   lastName: z.string().nonempty("Ingrese el Apellido"),
@@ -54,6 +55,8 @@ export default function NewClientForm() {
       }).unwrap();
       // Redirect
       router.back();
+      // Toast
+      toast("El cliente ha sido creado.");
     } catch (error) {
       console.log(error);
     }
@@ -111,7 +114,7 @@ export default function NewClientForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Saldo" {...field} />
+                    <Input type="number" placeholder="Saldo" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,7 +126,7 @@ export default function NewClientForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Comisión" {...field} />
+                    <Input placeholder="Comisión (%)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

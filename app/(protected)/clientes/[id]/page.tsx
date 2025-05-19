@@ -40,7 +40,7 @@ export default function ClientPage() {
         <Separator />
       </div>
 
-      <ClientTransactionTable />
+      <ClientTransactionTable client={client} />
     </div>
   );
 }

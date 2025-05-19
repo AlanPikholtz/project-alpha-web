@@ -11,8 +11,14 @@ import CommissionsPerClient from "../ui/metrics/commissions-per-client";
 import ClientsPerAcconut from "../ui/metrics/clients-per-account";
 import { BanknoteIcon, UserIcon, UserXIcon } from "lucide-react";
 import MetricsSkeleton from "../ui/metrics/skeleton/MetricsSkeleton";
+import useExcel from "../hooks/useExcel";
+import { Button } from "@/components/ui/button";
+import { es } from "date-fns/locale";
+import _ from "lodash";
 
 export default function Dashboard() {
+  const { exportToExcel } = useExcel();
+
   const [
     getMetrics,
     { data: metrics, isLoading: loadingMetrics, isFetching: fetchingMetrics },
@@ -30,6 +36,68 @@ export default function Dashboard() {
     }
   }, [date, getMetrics]);
 
+  const handleExportMetrics = () => {
+    if (!metrics || !date) return;
+    const {
+      totalClients,
+      totalDeposits,
+      totalCommissions,
+      unassignedDeposits,
+      clientsPerAccount,
+      depositsPerClient,
+      commissionsPerClient,
+    } = metrics;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataToExport: { name: string; data: any[] }[] = [
+      {
+        name: "Resumen",
+        data: [
+          {
+            "Total de clientes": totalClients,
+            "Total de depósitos": totalDeposits,
+            "Total de comisiones": totalCommissions,
+            "Depósitos sin asignar": unassignedDeposits,
+          },
+        ],
+      },
+    ];
+    if (clientsPerAccount.length > 0) {
+      dataToExport.push({
+        name: "Clientes por cuenta",
+        data: clientsPerAccount.map((c) => ({
+          "Nombre de cuenta": c.accountName,
+          "Total de clientes": c.totalClients,
+        })),
+      });
+    }
+
+    if (depositsPerClient.length > 0) {
+      dataToExport.push({
+        name: "Depósitos por cliente",
+        data: depositsPerClient.map((d) => ({
+          Cliente: d.clientFullName,
+          "Total de depósitos": d.totalDeposits,
+        })),
+      });
+    }
+
+    if (commissionsPerClient.length > 0) {
+      dataToExport.push({
+        name: "Comisiones por cliente",
+        data: commissionsPerClient.map((c) => ({
+          Cliente: c.clientFullName,
+          "Total de comisiones": c.totalCommissions,
+        })),
+      });
+    }
+
+    exportToExcel(
+      dataToExport,
+      `Métricas - ${_.capitalize(format(date, "MMMM", { locale: es }))}`
+    );
+  };
+
   useEffect(() => {
     doGetMetrics();
   }, [date, doGetMetrics]);
@@ -40,12 +108,21 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-y-4 h-full">
-      <SingleDatePicker
-        monthOnly
-        date={date}
-        withDeleteButton={false}
-        setDate={setDate}
-      />
+      <div className="flex items-center justify-between">
+        <SingleDatePicker
+          monthOnly
+          date={date}
+          withDeleteButton={false}
+          setDate={setDate}
+        />
+        <Button
+          className="self-start"
+          disabled={!metrics}
+          onClick={handleExportMetrics}
+        >
+          Exportar
+        </Button>
+      </div>
 
       {(loadingMetrics || fetchingMetrics) && <MetricsSkeleton />}
       {!loadingMetrics && !fetchingMetrics && (

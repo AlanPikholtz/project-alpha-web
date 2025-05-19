@@ -19,6 +19,7 @@ import _ from "lodash";
 import SortByFilter from "../transactions/filters/sort-by-filter";
 import { sortByOptions } from "@/app/lib/transactions/data";
 import { formatNumber } from "@/app/lib/helpers";
+import { Client } from "@/app/lib/clients/types";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -60,7 +61,11 @@ const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function ClientTransactionTable() {
+export default function ClientTransactionTable({
+  client,
+}: {
+  client?: Client;
+}) {
   const { id } = useParams(); // Get the dynamic ID from the URL
 
   const { exportToExcel } = useExcel();
@@ -117,7 +122,7 @@ export default function ClientTransactionTable() {
   });
 
   const handleExcelExport = () => {
-    if (!transactions || transactions.data.length === 0) return;
+    if (!transactions || transactions.data.length === 0 || !client) return;
 
     const exportData = transactions.data.map((t) => ({
       "Id de cliente": t.clientId,
@@ -127,7 +132,15 @@ export default function ClientTransactionTable() {
       Tipo: transactionTypeToString(t.type),
     }));
 
-    exportToExcel(exportData, "Transacciones");
+    exportToExcel(
+      [
+        {
+          name: `Transacciones ${client.firstName} ${client.lastName}`,
+          data: exportData,
+        },
+      ],
+      "Transacciones"
+    );
   };
   return (
     <div className="flex flex-col gap-y-6.5">
@@ -145,7 +158,11 @@ export default function ClientTransactionTable() {
         table={table}
         withPagination
         bottomLeftComponent={
-          <Button className="self-start" onClick={handleExcelExport}>
+          <Button
+            className="self-start"
+            disabled={transactions && transactions?.data.length === 0}
+            onClick={handleExcelExport}
+          >
             Exportar
           </Button>
         }
