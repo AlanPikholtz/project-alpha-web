@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LogOut } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/app/lib/utils";
@@ -28,7 +28,6 @@ import { useAppDispatch } from "@/app/lib/store/hooks";
 import { useState } from "react";
 
 const menuItems = [
-  { title: "Totalitarias", url: "/" },
   { title: "Depósitos", url: "/depositos" },
   { title: "Pagos", url: "/pagos" },
   { title: "Clientes", url: "/clientes" },
@@ -79,6 +78,23 @@ export default function SideNav() {
 
         <SidebarFooter>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                className={cn(
+                  "rounded-md py-2 transition-colors",
+                  pathname.startsWith("/configuracion")
+                    ? "hover:bg-neutral-900 bg-neutral-900 hover:text-white text-white"
+                    : "hover:bg-neutral-200 text-black"
+                )}
+              >
+                <Link
+                  className="w-full flex items-center gap-x-2"
+                  href={"/configuracion/totalitarias"}
+                >
+                  <Settings size={16} /> Configuracion
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 className="text-[#A1A1AA]"

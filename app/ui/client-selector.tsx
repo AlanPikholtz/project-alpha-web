@@ -39,7 +39,7 @@ export default function ClientSelector({
       refetchOnFocus: true,
       refetchOnMountOrArgChange: true,
       refetchOnReconnect: true,
-      skip: !selectedAccountId,
+      skip: !allClients && !selectedAccountId,
     }
   );
 
