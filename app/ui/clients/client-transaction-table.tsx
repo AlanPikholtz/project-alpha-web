@@ -31,6 +31,14 @@ const columns: ColumnDef<Operation>[] = [
     },
   },
   {
+    accessorKey: "assignedAt",
+    header: "Fecha/Hora Asignacion",
+    cell: ({ row }) => {
+      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
+      return formatted;
+    },
+  },
+  {
     accessorKey: "type",
     header: "Tipo",
     cell: ({ row }) => {
