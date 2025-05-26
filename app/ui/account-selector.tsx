@@ -20,16 +20,29 @@ import {
 import { cn } from "../lib/utils";
 import { useAccountId } from "../context/account-provider";
 
-export default function AccountSelector({ disable }: { disable?: boolean }) {
+export default function AccountSelector({
+  disable,
+  onSelect,
+  value,
+}: {
+  disable?: boolean;
+  onSelect?: (id: number) => void;
+  value?: number; // valor controlado
+}) {
   const { accounts, loadingAccounts, selectedAccountId, setSelectedAccountId } =
     useAccountId();
 
   const [open, setOpen] = React.useState(false);
 
+  // If we're uncontrolled (context), set first account by default
   React.useEffect(() => {
+    if (onSelect) return; // Skip if controlled
     if (selectedAccountId || accounts.length === 0) return;
     setSelectedAccountId(accounts[0].id);
-  }, [accounts, selectedAccountId, setSelectedAccountId]);
+  }, [accounts, selectedAccountId, setSelectedAccountId, onSelect]);
+
+  // Determine which ID to use
+  const currentValue = onSelect ? value : selectedAccountId;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -42,8 +55,8 @@ export default function AccountSelector({ disable }: { disable?: boolean }) {
           loading={loadingAccounts}
           asChild
         >
-          {selectedAccountId
-            ? accounts.find((account) => account.id === selectedAccountId)?.name
+          {currentValue
+            ? accounts.find((account) => account.id === currentValue)?.name
             : "Seleccionar cuenta..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -58,10 +71,13 @@ export default function AccountSelector({ disable }: { disable?: boolean }) {
                 <CommandItem
                   key={account.id}
                   value={`${account.id}`}
-                  onSelect={(currentValue) => {
-                    console.log({ currentValue });
-
-                    setSelectedAccountId(+currentValue);
+                  onSelect={(idStr) => {
+                    const id = +idStr;
+                    if (onSelect) {
+                      onSelect(id);
+                    } else {
+                      setSelectedAccountId(id);
+                    }
                     setOpen(false);
                   }}
                 >

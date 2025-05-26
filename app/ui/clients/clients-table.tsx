@@ -25,9 +25,6 @@ const columns: ColumnDef<Client>[] = [
 export default function ClientsTable() {
   const router = useRouter();
 
-  // Filters
-  // const [search, setSearch] = useState<string>("");
-
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -85,15 +82,6 @@ export default function ClientsTable() {
 
   return (
     <div className="flex flex-col gap-y-6.5">
-      {/* Filters */}
-      {/* <div className="flex gap-4 justify-between items-center py-4">
-        <Input
-          className="max-w-sm"
-          placeholder="Buscar cliente"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div> */}
       {/* Table */}
       <CustomTable
         columns={columns}

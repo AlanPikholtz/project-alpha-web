@@ -83,9 +83,15 @@ export const clientsApi = api
           sort?: SortBy;
         } & PagedQueryParams
       >({
-        query: ({ clientId }) => {
+        query: ({ clientId, from, to, limit, page, sort }) => {
+          const searchParams = new URLSearchParams();
+          if (from) searchParams.append("from", from.toString());
+          if (to) searchParams.append("to", to.toString());
+          if (limit) searchParams.append("limit", limit.toString());
+          if (page) searchParams.append("page", page.toString());
+          if (sort) searchParams.append("sort", sort.toString());
           return {
-            url: `/clients/${clientId}/operations`,
+            url: `/clients/${clientId}/operations?${searchParams.toString()}`,
             method: "GET",
           };
         },

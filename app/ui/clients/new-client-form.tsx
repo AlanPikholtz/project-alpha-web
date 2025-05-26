@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
-import AccountSelector from "../account-selector";
 import { useCreateClientMutation } from "@/app/lib/clients/api";
-import { useAccountId } from "@/app/context/account-provider";
 import { toast } from "sonner";
+import AccountSelector from "../account-selector";
 
 const formSchema = z.object({
   lastName: z.string().nonempty("Ingrese el Apellido"),
@@ -26,12 +25,11 @@ const formSchema = z.object({
   balance: z.string().nonempty("Ingrese el Saldo"),
   commission: z.string().nonempty("Ingrese la comisión"),
   notes: z.string(),
+  accountId: z.number(),
 });
 
 export default function NewClientForm() {
   const router = useRouter();
-
-  const { selectedAccountId } = useAccountId();
 
   const [createClient, { isLoading: loading }] = useCreateClientMutation();
 
@@ -48,12 +46,8 @@ export default function NewClientForm() {
   });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!selectedAccountId) return;
     try {
-      await createClient({
-        accountId: selectedAccountId,
-        ...data,
-      }).unwrap();
+      await createClient(data).unwrap();
       // Redirect
       router.back();
       // Toast
@@ -150,8 +144,21 @@ export default function NewClientForm() {
               )}
             />
 
-            {/* Just for testing */}
-            <AccountSelector />
+            <FormField
+              control={form.control}
+              name="accountId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <AccountSelector
+                      value={field.value}
+                      onSelect={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
         <div className="flex gap-3.5">

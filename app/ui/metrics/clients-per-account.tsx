@@ -28,8 +28,8 @@ export default function ClientsPerAccount({
       <CardContent className="p-2">
         <div className="max-h-64 overflow-y-auto">
           <Table>
-            <TableHeader>
-              <TableRow className="sticky top-0 z-10 bg-background">
+            <TableHeader className="sticky top-0 z-10 bg-white">
+              <TableRow>
                 <TableHead>Cuenta</TableHead>
                 <TableHead className="text-right">Clientes</TableHead>
               </TableRow>

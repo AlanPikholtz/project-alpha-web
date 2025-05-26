@@ -20,6 +20,7 @@ import { useCreatePaymentMutation } from "@/app/lib/payments/api";
 import { Payment, PaymentMethod } from "@/app/lib/payments/types";
 import ClientSelector from "../client-selector";
 import { toast } from "sonner";
+import ApiErrorMessage from "../api-error-message";
 
 const formSchema = z.object({
   clientId: z.string().nonempty("Ingrese el codigo del cliente"),
@@ -31,7 +32,8 @@ const formSchema = z.object({
 export default function NewPaymentForm() {
   const router = useRouter();
 
-  const [createPayment, { isLoading: loading }] = useCreatePaymentMutation();
+  const [createPayment, { isLoading: loading, error }] =
+    useCreatePaymentMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -142,6 +144,8 @@ export default function NewPaymentForm() {
           </Button>
         </div>
       </form>
+
+      {error && <ApiErrorMessage error={error} />}
     </Form>
   );
 }
