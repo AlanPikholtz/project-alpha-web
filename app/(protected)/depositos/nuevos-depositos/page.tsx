@@ -43,6 +43,7 @@ export default function NewTransactionsPage() {
         accountId: selectedAccountId,
         page: 1, // Current page
         limit: 1, // Amount of pages
+        sort: "date",
       },
       {
         refetchOnFocus: true,

@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
 import AccountSelector from "../account-selector";
 import { useUpdateClientMutation } from "@/app/lib/clients/api";
-import { useAccountId } from "@/app/context/account-provider";
 import { toast } from "sonner";
 import { Client } from "@/app/lib/clients/types";
 
@@ -25,12 +24,10 @@ const formSchema = z.object({
   firstName: z.string().nonempty("Ingrese el Nombre"),
   commission: z.string().nonempty("Ingrese la comisión"),
   notes: z.string(),
+  accountId: z.number(),
 });
 export default function UpdateClientForm({ client }: { client: Client }) {
   const router = useRouter();
-
-  const { selectedAccountId } = useAccountId();
-
   const [updateClient, { isLoading: loading }] = useUpdateClientMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -40,15 +37,14 @@ export default function UpdateClientForm({ client }: { client: Client }) {
       lastName: client.lastName,
       commission: client.commission,
       notes: client.notes,
+      accountId: client.accountId,
     },
   });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!selectedAccountId) return;
     try {
       await updateClient({
         id: client.id,
-        accountId: selectedAccountId,
         ...data,
       }).unwrap();
       // Redirect
@@ -123,8 +119,21 @@ export default function UpdateClientForm({ client }: { client: Client }) {
               )}
             />
 
-            {/* Just for testing */}
-            <AccountSelector />
+            <FormField
+              control={form.control}
+              name="accountId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <AccountSelector
+                      value={field.value}
+                      onSelect={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
         <div className="flex gap-3.5">

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -22,6 +22,7 @@ import { useAccountId } from "@/app/context/account-provider";
 import { useRouter } from "next/navigation";
 import { formatNumber } from "@/app/lib/helpers";
 import { toast } from "sonner";
+import DuplicatedTransactionsModal from "./duplicated-transactions-modal";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
   {
@@ -64,9 +65,11 @@ export default function NewTransactionsTable({
 
   const { selectedAccountId } = useAccountId();
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [duplicatedTransactions, setDuplicatedTransactions] = useState<
+    Partial<Transaction>[]
+  >([]);
+  const [showModal, setShowModal] = useState(false);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const [createBulkTransaction, { isLoading: loading }] =
     useCreateBulkTransactionMutation();
@@ -93,10 +96,19 @@ export default function NewTransactionsTable({
 
       // Redirect
       router.back();
-      // Toast
-      toast("Depositos guardados.");
-    } catch (e) {
-      console.log(e);
+      toast.success("Depositos guardados.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      if (
+        e?.data?.error === "DuplicateEntryError" &&
+        Array.isArray(e?.data?.messages)
+      ) {
+        setDuplicatedTransactions(e.data.messages);
+        setShowModal(true);
+      } else {
+        console.error(e);
+        toast.error("Error inesperado al guardar los depósitos.");
+      }
     }
   };
 
@@ -124,6 +136,11 @@ export default function NewTransactionsTable({
       </div>
       {/* Table */}
       <CustomTable columns={columns} table={table} />
+      <DuplicatedTransactionsModal
+        open={showModal}
+        transactions={duplicatedTransactions}
+        onClose={setShowModal}
+      />
     </div>
   );
 }

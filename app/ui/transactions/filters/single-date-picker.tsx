@@ -91,23 +91,31 @@ export default function SingleDatePicker({
             </Select>
 
             <div className="grid grid-cols-3 gap-2">
-              {months.map((monthName, index) => (
-                <Button
-                  key={monthName}
-                  variant={"outline"}
-                  className="w-full"
-                  onClick={() => {
-                    const selectedMonth = new Date();
-                    selectedMonth.setFullYear(selectedYear);
-                    selectedMonth.setMonth(index);
-                    selectedMonth.setDate(1);
-                    setDate(selectedMonth);
-                    setOpen(false);
-                  }}
-                >
-                  {monthName}
-                </Button>
-              ))}
+              {months.map((monthName, index) => {
+                const isSelected =
+                  date?.getMonth() === index &&
+                  date?.getFullYear() === selectedYear;
+
+                return (
+                  <Button
+                    key={monthName}
+                    variant={isSelected ? "default" : "outline"}
+                    className={clsx("w-full", {
+                      "border border-primary bg-primary text-white": isSelected, // extra por si usás Tailwind
+                    })}
+                    onClick={() => {
+                      const selectedMonth = new Date();
+                      selectedMonth.setFullYear(selectedYear);
+                      selectedMonth.setMonth(index);
+                      selectedMonth.setDate(1);
+                      setDate(selectedMonth);
+                      setOpen(false);
+                    }}
+                  >
+                    {monthName}
+                  </Button>
+                );
+              })}
             </div>
           </div>
         ) : (

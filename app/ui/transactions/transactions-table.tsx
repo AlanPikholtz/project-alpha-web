@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -79,6 +79,9 @@ export default function TransactionsTable() {
   const { selectedAccountId } = useAccountId();
   // Filters
   const [amountFilter, setAmountFilter] = useState<string>("");
+  const [debouncedAmountFilter, setDebouncedAmountFilter] =
+    useState<string>("");
+
   const [statusFilter, setStatusFilter] = useState<
     TransactionStatus | undefined
   >(assignedOptions[0].value as TransactionStatus | undefined);
@@ -94,12 +97,13 @@ export default function TransactionsTable() {
   } = useGetTransactionsQuery(
     {
       accountId: selectedAccountId,
-      amount: +amountFilter,
+      amount: +debouncedAmountFilter,
       status: statusFilter,
       page: pageIndex + 1, // Current page
       limit: pageSize, // Amount of pages
       from: dateRange?.from?.toISOString(),
       to: dateRange?.to?.toISOString(),
+      sort: "date",
     },
     {
       refetchOnFocus: true,
@@ -150,6 +154,19 @@ export default function TransactionsTable() {
       setPageSize(newPagination.pageSize);
     },
   });
+
+  useEffect(() => {
+    const handler = _.debounce((value: string) => {
+      setDebouncedAmountFilter(value);
+    }, 400); // 400ms debounce
+
+    handler(amountFilter);
+
+    // Cancelar debounce si el componente se desmonta o cambia
+    return () => {
+      handler.cancel();
+    };
+  }, [amountFilter]);
 
   return (
     <div className="flex flex-col gap-y-6.5">

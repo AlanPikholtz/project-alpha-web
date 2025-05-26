@@ -98,7 +98,6 @@ export default function ClientTransactionTable({
       from: dateRange?.from?.toISOString(),
       to: dateRange?.to?.toISOString(),
       sort: sortByFilter,
-      // status: typeFilter,
     });
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
