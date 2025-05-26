@@ -27,6 +27,7 @@ const formSchema = z.object({
   commission: z.string().nonempty("Ingrese la comisión"),
   notes: z.string(),
 });
+
 export default function NewClientForm() {
   const router = useRouter();
 

@@ -2,20 +2,67 @@ import api from "../api/api";
 import { PagedDataResponse, PagedQueryParams } from "../api/types";
 import { Account } from "./types";
 
-export const accountsApi = api.injectEndpoints({
-  endpoints: (builder) => ({
-    getAccounts: builder.query<PagedDataResponse<Account[]>, PagedQueryParams>({
-      query: ({ limit = 0, page }) => {
-        const searchParams = new URLSearchParams();
-        if (limit) searchParams.append("limit", limit.toString());
-        if (page) searchParams.append("page", page.toString());
-        return {
-          url: `/accounts?${searchParams.toString()}`,
-          method: "get",
-        };
-      },
+export const accountsApi = api
+  .enhanceEndpoints({ addTagTypes: ["Accounts"] })
+  .injectEndpoints({
+    endpoints: (builder) => ({
+      getAccounts: builder.query<
+        PagedDataResponse<Account[]>,
+        PagedQueryParams
+      >({
+        query: ({ limit = 0, page }) => {
+          const searchParams = new URLSearchParams();
+          if (limit) searchParams.append("limit", limit.toString());
+          if (page) searchParams.append("page", page.toString());
+          return {
+            url: `/accounts?${searchParams.toString()}`,
+            method: "GET",
+          };
+        },
+        providesTags: ["Accounts"],
+      }),
+      getAccountById: builder.query<Account, { id: number }>({
+        query: ({ id }) => {
+          return {
+            url: `/accounts/${id}`,
+            method: "GET",
+          };
+        },
+        providesTags: ["Accounts"],
+      }),
+      createAccount: builder.mutation<{ id: number }, Partial<Account>>({
+        query: ({ name }) => {
+          return {
+            url: "/accounts",
+            method: "POST",
+            body: {
+              name,
+            },
+          };
+        },
+        invalidatesTags: ["Accounts"],
+      }),
+      updateAccount: builder.mutation<
+        { id: number },
+        { id: number; name: string }
+      >({
+        query: ({ id, name }) => {
+          return {
+            url: `/accounts/${id}`,
+            method: "PUT",
+            body: {
+              name,
+            },
+          };
+        },
+        invalidatesTags: ["Accounts"],
+      }),
     }),
-  }),
-});
+  });
 
-export const { useGetAccountsQuery } = accountsApi;
+export const {
+  useGetAccountsQuery,
+  useGetAccountByIdQuery,
+  useCreateAccountMutation,
+  useUpdateAccountMutation,
+} = accountsApi;

@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useAppDispatch } from "@/app/lib/store/hooks";
 import { useAuthenticateMutation } from "@/app/lib/auth/api";
 import { saveSessionData } from "@/app/lib/auth/authSlice";
+import ApiErrorMessage from "../api-error-message";
 
 const formSchema = z.object({
   username: z.string().nonempty("Ingrese el nombre de usuario"),
@@ -26,7 +27,7 @@ export default function LoginForm() {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const [authenticate, { isLoading }] = useAuthenticateMutation();
+  const [authenticate, { isLoading, error }] = useAuthenticateMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -88,6 +89,8 @@ export default function LoginForm() {
           Ingresar
         </Button>
       </form>
+
+      {error && <ApiErrorMessage error={error} />}
     </Form>
   );
 }
