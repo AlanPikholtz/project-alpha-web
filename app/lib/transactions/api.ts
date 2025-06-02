@@ -102,7 +102,7 @@ export const transactionsApi = api
           method: "PUT",
           body: { transactionIds },
         }),
-        invalidatesTags: ["Transactions"],
+        invalidatesTags: ["Transactions", "Clients"],
       }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding

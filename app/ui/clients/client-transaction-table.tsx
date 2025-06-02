@@ -23,7 +23,7 @@ import { useGetClientOperationsQuery } from "@/app/lib/clients/api";
 
 const columns: ColumnDef<Operation>[] = [
   {
-    accessorKey: "date", // assignedAt?
+    accessorKey: "date",
     header: "Fecha/Hora",
     cell: ({ row }) => {
       const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
@@ -34,7 +34,9 @@ const columns: ColumnDef<Operation>[] = [
     accessorKey: "assignedAt",
     header: "Fecha/Hora Asignación",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
+      const formatted = new Date(row.getValue("assignedAt")).toLocaleString(
+        "es-AR"
+      );
       return formatted;
     },
   },
