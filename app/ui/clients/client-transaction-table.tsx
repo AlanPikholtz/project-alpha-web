@@ -32,7 +32,7 @@ const columns: ColumnDef<Operation>[] = [
   },
   {
     accessorKey: "assignedAt",
-    header: "Fecha/Hora Asignacion",
+    header: "Fecha/Hora Asignación",
     cell: ({ row }) => {
       const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
       return formatted;
@@ -140,14 +140,15 @@ export default function ClientTransactionTable({
       Tipo: transactionTypeToString(t.type),
     }));
 
+    const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
     exportToExcel(
       [
         {
-          name: `Transacciones ${client.firstName} ${client.lastName}`,
+          name: excelName,
           data: exportData,
         },
       ],
-      "Transacciones"
+      excelName
     );
   };
   return (

@@ -46,7 +46,7 @@ export function TablePagination<TData>({ table }: TablePaginationProps<TData>) {
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Pagina {table.getState().pagination.pageIndex + 1} de{" "}
+          Página {table.getState().pagination.pageIndex + 1} de{" "}
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
@@ -56,7 +56,7 @@ export function TablePagination<TData>({ table }: TablePaginationProps<TData>) {
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Ir a la primera pagina</span>
+            <span className="sr-only">Ir a la primera página</span>
             <ChevronsLeft />
           </Button>
           <Button
@@ -65,7 +65,7 @@ export function TablePagination<TData>({ table }: TablePaginationProps<TData>) {
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Pagina anterior</span>
+            <span className="sr-only">Página anterior</span>
             <ChevronLeft />
           </Button>
           <Button
@@ -74,7 +74,7 @@ export function TablePagination<TData>({ table }: TablePaginationProps<TData>) {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Pagina siguiente</span>
+            <span className="sr-only">Página siguiente</span>
             <ChevronRight />
           </Button>
           <Button
@@ -83,7 +83,7 @@ export function TablePagination<TData>({ table }: TablePaginationProps<TData>) {
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Ultima pagina</span>
+            <span className="sr-only">Ultima página</span>
             <ChevronsRight />
           </Button>
         </div>

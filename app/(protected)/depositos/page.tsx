@@ -6,7 +6,7 @@ import AccountSelector from "@/app/ui/account-selector";
 import { CirclePlus } from "lucide-react";
 
 export const metadata = {
-  title: "Depositos",
+  title: "Depósitos",
 };
 
 export default function TransactionsPage() {

@@ -194,6 +194,7 @@ export default function TransactionsTable() {
               transactions={table
                 .getFilteredSelectedRowModel()
                 .rows.map((row) => row.original)}
+              onSuccessAssign={() => table.resetRowSelection()}
             />
           )
         }

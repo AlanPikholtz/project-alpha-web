@@ -50,7 +50,7 @@ export default function UpdateClientForm({ client }: { client: Client }) {
       // Redirect
       router.back();
       // Toast
-      toast("El cliente ha sido actualizado.");
+      toast.success("El cliente ha sido actualizado.");
     } catch (error) {
       console.log(error);
     }

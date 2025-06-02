@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,8 +27,10 @@ import ApiErrorMessage from "../api-error-message";
 // Modal for assigning a client to >= 1 transactions
 export default function AssignClientModal({
   transactions,
+  onSuccessAssign,
 }: {
   transactions: Transaction[];
+  onSuccessAssign: () => void;
 }) {
   const { selectedAccountId } = useAccountId();
 
@@ -38,7 +40,7 @@ export default function AssignClientModal({
     { accountId: selectedAccountId },
     { skip: !selectedAccountId }
   );
-  const [bulkUpdateTransactions, { error: errorUpdating }] =
+  const [bulkUpdateTransactions, { reset, error: errorUpdating }] =
     useBulkUpdateTransactionMutation();
 
   const doBulkUpdate = async (clientId: number) => {
@@ -47,11 +49,19 @@ export default function AssignClientModal({
         clientId,
         transactionIds: transactions.map((x) => x.id),
       }).unwrap();
+      // De-Select items
+      onSuccessAssign();
+      // Close modal
       setOpen(false);
     } catch (e) {
       console.log(e);
     }
   };
+
+  // Lets reset when modal is closed
+  useEffect(() => {
+    if (!open) reset();
+  }, [open, reset]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
