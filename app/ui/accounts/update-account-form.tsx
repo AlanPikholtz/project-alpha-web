@@ -43,7 +43,7 @@ export default function UpdateAccountForm({ account }: { account: Account }) {
       // Redirect
       router.back();
       // Toast
-      toast("La cuenta ha sido actualizada.");
+      toast.success("La cuenta ha sido actualizada.");
     } catch (error) {
       console.log(error);
     }

@@ -59,7 +59,7 @@ export default function NewPaymentForm() {
       // Redirect
       router.back();
       // Show success toast
-      toast("El pago ha sido registrado.");
+      toast.success("El pago ha sido registrado.");
     } catch (error) {
       console.log(error);
     }

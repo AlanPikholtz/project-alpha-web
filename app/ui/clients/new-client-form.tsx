@@ -51,7 +51,7 @@ export default function NewClientForm() {
       // Redirect
       router.back();
       // Toast
-      toast("El cliente ha sido creado.");
+      toast.success("El cliente ha sido creado.");
     } catch (error) {
       console.log(error);
     }

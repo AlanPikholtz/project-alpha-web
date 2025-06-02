@@ -31,7 +31,7 @@ export default function DepositsPerClient({
             <TableHeader>
               <TableRow className="sticky top-0 z-10 bg-background">
                 <TableHead>Cliente</TableHead>
-                <TableHead className="text-right">Depositos</TableHead>
+                <TableHead className="text-right">Depósitos</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

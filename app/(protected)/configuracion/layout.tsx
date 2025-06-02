@@ -5,7 +5,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-full gap-10">
       {/* Main content */}
       <div className="flex flex-col gap-6 flex-1">
-        <h1 className="font-bold text-2xl">Configuracion</h1>
+        <h1 className="font-bold text-2xl">Configuración</h1>
         {children}
       </div>
       <SettingsSidebar />

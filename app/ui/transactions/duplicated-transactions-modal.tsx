@@ -62,8 +62,8 @@ export default function DuplicatedTransactionsModal({
 }) {
   const description = useMemo(() => {
     return transactions.length === 1
-      ? "Se encontro 1 deposito duplicado. Este sera eliminado de la tabla y no sera guardado al finalizar"
-      : `Se encontraron ${transactions.length} depositos duplicados. Estos seran eliminados de la tabla y no seran guardados al finalizar`;
+      ? "Se encontró 1 depósito duplicado. Este será eliminado de la tabla y no se guardado al finalizar"
+      : `Se encontraron ${transactions.length} depósitos duplicados. Estos seran eliminados de la tabla y no seran guardados al finalizar`;
   }, [transactions]);
 
   const table = useReactTable({

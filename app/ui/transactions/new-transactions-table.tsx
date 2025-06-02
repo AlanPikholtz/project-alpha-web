@@ -103,7 +103,7 @@ export default function NewTransactionsTable({
         e?.data?.error === "DuplicateEntryError" &&
         Array.isArray(e?.data?.messages)
       ) {
-        setDuplicatedTransactions(e.data.messages);
+        setDuplicatedTransactions(e.data.messages[0] as Transaction[]);
         setShowModal(true);
       } else {
         console.error(e);

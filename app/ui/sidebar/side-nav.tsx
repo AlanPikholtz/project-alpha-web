@@ -112,7 +112,7 @@ export default function SideNav() {
       <AlertDialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Quiere cerrar la sesión?</AlertDialogTitle>
+            <AlertDialogTitle>¿Desea cerrar sesión?</AlertDialogTitle>
             <AlertDialogDescription>
               Puedes volver a iniciar sesión en cualquier momento.
             </AlertDialogDescription>

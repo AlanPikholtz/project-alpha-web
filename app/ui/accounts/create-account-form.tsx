@@ -38,7 +38,7 @@ export default function CreateAccountForm() {
       // Redirect
       router.back();
       // Toast
-      toast("La cuenta ha sido creada.");
+      toast.success("La cuenta ha sido creada.");
     } catch (error) {
       console.log(error);
     }

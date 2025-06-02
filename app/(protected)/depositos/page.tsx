@@ -6,7 +6,7 @@ import AccountSelector from "@/app/ui/account-selector";
 import { CirclePlus } from "lucide-react";
 
 export const metadata = {
-  title: "Depositos",
+  title: "Depósitos",
 };
 
 export default function TransactionsPage() {
@@ -17,8 +17,13 @@ export default function TransactionsPage() {
         <AccountSelector />
         {/* New transaccions */}
         <Button asChild>
-          <CirclePlus />
-          <Link href="/depositos/nuevos-depositos">Nuevos depósitos</Link>
+          <Link
+            href="/depositos/nuevos-depositos"
+            className="flex items-center gap-2"
+          >
+            <CirclePlus />
+            Nuevos depósitos
+          </Link>
         </Button>
       </div>
       <TransactionsTable />

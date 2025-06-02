@@ -35,12 +35,12 @@ const columns: ColumnDef<Payment>[] = [
   { accessorKey: "currency", header: "Moneda" },
   {
     accessorKey: "method",
-    header: "Metodo",
+    header: "Método",
     cell: ({ row }) => {
       return _.capitalize(paymentMethodToString(row.getValue("method")));
     },
   },
-  { accessorKey: "clientCode", header: "Codigo de cliente" },
+  { accessorKey: "clientCode", header: "Código de cliente" },
 ];
 
 export default function PaymentsTable() {

@@ -94,7 +94,9 @@ export default function SettingsDashboard() {
 
     exportToExcel(
       dataToExport,
-      `Métricas - ${_.capitalize(format(date, "MMMM", { locale: es }))}`
+      `Totalitarias - ${_.capitalize(
+        format(date, "MMMM - yyyy", { locale: es })
+      )}`
     );
   };
 
@@ -134,7 +136,7 @@ export default function SettingsDashboard() {
               icon={<UserIcon />}
             />
             <MetricCard
-              title="Depositos totales"
+              title="Depósitos totales"
               value={formatNumber(+(metrics?.totalDeposits || 0), {
                 style: "currency",
                 currency: "ARS",
@@ -150,7 +152,7 @@ export default function SettingsDashboard() {
               icon={<BanknoteIcon />}
             />
             <MetricCard
-              title="Depositos no asignados"
+              title="Depósitos no asignados"
               value={formatNumber(+(metrics?.unassignedDeposits || 0))}
               icon={<UserXIcon />}
             />
