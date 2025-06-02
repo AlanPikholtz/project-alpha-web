@@ -15,7 +15,7 @@ const mutex = new Mutex();
 
 // Define a custom baseQuery to handle async logic for authorization
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://project-alpha-development.up.railway.app/", // Cambiá esto por la URL real de tu API
+  baseUrl: process.env.NEXT_PUBLIC_API_URL,
   prepareHeaders: (headers, { getState }) => {
     const session = (getState() as RootState).auth.session;
     if (session) {
@@ -85,6 +85,7 @@ const baseQueryWithReauth: BaseQueryFn<
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
   reducerPath: "api",
+  tagTypes: ["Clients"],
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),
 });

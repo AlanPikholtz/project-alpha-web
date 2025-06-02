@@ -28,6 +28,7 @@ export const paymentsApi = api
             body: payment,
           };
         },
+        invalidatesTags: ["Payments", "Clients"],
       }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding
