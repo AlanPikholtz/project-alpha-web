@@ -91,7 +91,7 @@ export default function SideNav() {
                   className="w-full flex items-center gap-x-2"
                   href={"/configuracion/totalitarias"}
                 >
-                  <Settings size={16} /> Configuracion
+                  <Settings size={16} /> Configuración
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

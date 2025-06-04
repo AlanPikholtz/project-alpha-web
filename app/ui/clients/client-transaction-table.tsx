@@ -6,7 +6,7 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import DateRangeFilter from "../transactions/filters/date-range-filter";
 import CustomTable from "../custom-table";
@@ -153,6 +153,12 @@ export default function ClientTransactionTable({
       excelName
     );
   };
+
+  // Reset page on filters change
+  useEffect(() => {
+    setPageIndex(0);
+  }, [sortByFilter, dateRange]);
+
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}

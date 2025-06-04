@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 export default function SortByFilter({
   sortByFilter,
@@ -23,8 +23,9 @@ export default function SortByFilter({
   sortByFilter?: SortBy;
   setSortByFilter: (value: SortBy) => void;
 }) {
+  const [open, setOpen] = useState<boolean>(false);
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           className="min-w-[180px] justify-between"
@@ -43,7 +44,10 @@ export default function SortByFilter({
               {sortByOptions.map((option) => (
                 <CommandItem
                   key={option.value}
-                  onSelect={() => setSortByFilter(option.value as SortBy)}
+                  onSelect={() => {
+                    setSortByFilter(option.value as SortBy);
+                    setOpen(false);
+                  }}
                 >
                   {option.label}
                   <Check

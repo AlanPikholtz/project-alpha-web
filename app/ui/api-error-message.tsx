@@ -17,7 +17,7 @@ export default function ApiErrorMessage({
       <Alert variant="destructive">
         <AlertCircle className="h-5 w-5" />
         <div className="flex flex-col gap-1">
-          <AlertTitle>Error: {castedError.error}</AlertTitle>
+          <AlertTitle>Error:</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside space-y-1 text-sm">
               {castedError.messages.map((msg, i) => (

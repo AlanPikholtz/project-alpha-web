@@ -155,6 +155,7 @@ export default function TransactionsTable() {
     },
   });
 
+  // Amount Search
   useEffect(() => {
     const handler = _.debounce((value: string) => {
       setDebouncedAmountFilter(value);
@@ -167,6 +168,11 @@ export default function TransactionsTable() {
       handler.cancel();
     };
   }, [amountFilter]);
+
+  // Reset page on filters change
+  useEffect(() => {
+    setPageIndex(0);
+  }, [debouncedAmountFilter, statusFilter, dateRange]);
 
   return (
     <div className="flex flex-col gap-y-6.5">
