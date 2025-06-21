@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 export default function ApiErrorMessage({
   error,
 }: {
-  error: FetchBaseQueryError | SerializedError;
+  error?: FetchBaseQueryError | SerializedError;
 }) {
+  if (!error) return null;
   if ("data" in error) {
     const castedError = error.data as unknown as ApiError;
     return (

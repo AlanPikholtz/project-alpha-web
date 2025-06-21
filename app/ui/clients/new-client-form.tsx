@@ -17,9 +17,10 @@ import { Textarea } from "../../../components/ui/textarea";
 import { useCreateClientMutation } from "@/app/lib/clients/api";
 import { toast } from "sonner";
 import AccountSelector from "../account-selector";
+import ApiErrorMessage from "../api-error-message";
 
 const formSchema = z.object({
-  lastName: z.string().nonempty("Ingrese el Apellido"),
+  lastName: z.string().optional(),
   firstName: z.string().nonempty("Ingrese el Nombre"),
   code: z.string().nonempty("Ingrese el Código"),
   balance: z.string().nonempty("Ingrese el Saldo"),
@@ -31,7 +32,8 @@ const formSchema = z.object({
 export default function NewClientForm() {
   const router = useRouter();
 
-  const [createClient, { isLoading: loading }] = useCreateClientMutation();
+  const [createClient, { isLoading: loading, error }] =
+    useCreateClientMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,20 +67,8 @@ export default function NewClientForm() {
         className="flex-1 max-w-xl"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
-        <div className="h-full">
+        <div className="h-full flex flex-col gap-y-6">
           <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="Apellido" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="firstName"
@@ -86,6 +76,18 @@ export default function NewClientForm() {
                 <FormItem>
                   <FormControl>
                     <Input placeholder="Nombre" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Apellido" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,7 +162,10 @@ export default function NewClientForm() {
               )}
             />
           </div>
+
+          <ApiErrorMessage error={error} />
         </div>
+
         <div className="flex gap-3.5">
           <Button type="submit" loading={loading}>
             Guardar
