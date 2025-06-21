@@ -61,13 +61,7 @@ const columns: ColumnDef<Operation>[] = [
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("clientAmount"));
       if (_.isNaN(amount)) return "-";
-      const formatted = new Intl.NumberFormat("es-AR", {
-        // Argetina formatting
-        style: "currency",
-        currency: "ARS",
-      }).format(amount);
-
-      return formatted;
+      return formatNumber(amount, { style: "currency" });
     },
   },
 ];
@@ -136,10 +130,21 @@ export default function ClientTransactionTable({
     if (!operations || operations.data.length === 0 || !client) return;
 
     const exportData = operations.data.map((t) => ({
-      "Nombre completo": `${client.firstName} ${client.lastName}`,
-      Monto: t.amount,
-      Fecha: new Date(t.date).toLocaleDateString("es-AR"),
+      "Fecha/Hora": new Date(t.date).toLocaleString("es-AR"),
+      "Fecha/Hora Asignación": new Date(t.assignedAt).toLocaleString("es-AR"),
       Tipo: transactionTypeToString(t.type),
+      Monto: _.isNaN(parseFloat(t.amount))
+        ? "-"
+        : formatNumber(parseFloat(t.amount), {
+            style: "currency",
+            currency: "ARS",
+          }),
+      "A Cliente": _.isNaN(parseFloat(t.clientAmount))
+        ? "-"
+        : formatNumber(parseFloat(t.clientAmount), {
+            style: "currency",
+            currency: "ARS",
+          }),
     }));
 
     const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
@@ -148,6 +153,13 @@ export default function ClientTransactionTable({
         {
           name: excelName,
           data: exportData,
+          columns: [
+            { wch: 25 }, // "Fecha/Hora"
+            { wch: 25 }, // "Fecha/Hora Asignación"
+            { wch: 20 }, // Tipo
+            { wch: 15 }, // Monto
+            { wch: 15 }, // A Cliente
+          ],
         },
       ],
       excelName
