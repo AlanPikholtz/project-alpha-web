@@ -52,7 +52,7 @@ export default function UpdateAccountDialog({ account }: { account: Account }) {
         id: account.id,
         ...data,
       }).unwrap();
-      // Redirect
+      // Closes modal
       setOpen(false);
       // Toast
       toast.success("La cuenta ha sido actualizada.");

@@ -12,10 +12,7 @@ export default function ClientActions({ client }: { client: Client }) {
       <Button
         size="icon"
         variant="ghost"
-        onClick={(e) => {
-          e.stopPropagation();
-          router.push(`/clientes/${client.id}`);
-        }}
+        onClick={() => router.push(`/clientes/${client.id}`)}
       >
         <Eye className="w-4 h-4" />
       </Button>
