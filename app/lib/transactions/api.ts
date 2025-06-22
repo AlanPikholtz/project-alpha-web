@@ -82,17 +82,6 @@ export const transactionsApi = api
         }),
         invalidatesTags: ["Transactions"],
       }),
-      updateTransaction: builder.mutation<
-        { id: string },
-        { transactionId: number; clientId: number }
-      >({
-        query: ({ transactionId, clientId }) => ({
-          url: `/transactions/${transactionId}`,
-          method: "POST",
-          body: { clientId },
-        }),
-        invalidatesTags: ["Transactions"],
-      }),
       bulkUpdateTransaction: builder.mutation<
         string,
         { clientId: number; transactionIds: number[] }
@@ -100,6 +89,27 @@ export const transactionsApi = api
         query: ({ clientId, transactionIds }) => ({
           url: `/transactions/client/${clientId}`,
           method: "PUT",
+          body: { transactionIds },
+        }),
+        invalidatesTags: ["Transactions", "Clients"],
+      }),
+      unassignClientTransaction: builder.mutation<
+        string,
+        { transactionId: number }
+      >({
+        query: ({ transactionId }) => ({
+          url: `/transactions/${transactionId}/unassign`,
+          method: "PUT",
+        }),
+        invalidatesTags: ["Transactions"],
+      }),
+      bulkDeleteTransaction: builder.mutation<
+        string,
+        { transactionIds: number[] }
+      >({
+        query: ({ transactionIds }) => ({
+          url: `/transactions/bulk`,
+          method: "DELETE",
           body: { transactionIds },
         }),
         invalidatesTags: ["Transactions", "Clients"],
@@ -114,6 +124,9 @@ export const {
   useCreateTransactionMutation,
   useCreateBulkTransactionMutation,
   // Update
-  useUpdateTransactionMutation,
   useBulkUpdateTransactionMutation,
+  // Unassign
+  useUnassignClientTransactionMutation,
+  // Delete
+  useBulkDeleteTransactionMutation,
 } = transactionsApi;

@@ -11,17 +11,26 @@ import {
 import CustomTable from "../custom-table";
 import { useGetAccountsQuery } from "@/app/lib/accounts/api";
 import { Account } from "@/app/lib/accounts/types";
-import { useRouter } from "next/navigation";
+import AccountActions from "./account-actions";
 
 const columns: ColumnDef<Account>[] = [
   {
     accessorKey: "name",
     header: "Nombre",
   },
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      const account = row.original;
+      return <AccountActions account={account} />;
+    },
+    meta: { className: "w-24 text-center" },
+    enableSorting: false,
+  },
 ];
 
 export default function AccountsTable() {
-  const router = useRouter();
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -66,9 +75,6 @@ export default function AccountsTable() {
       withPagination
       loading={loadingAccounts}
       fetching={fetchingAccounts}
-      onRowClick={({ id }) =>
-        router.push(`/configuracion/cuentas/${id}/editar`)
-      }
     />
   );
 }

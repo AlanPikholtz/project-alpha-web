@@ -61,7 +61,7 @@ const columns: ColumnDef<Operation>[] = [
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("clientAmount"));
       if (_.isNaN(amount)) return "-";
-      return formatNumber(amount, { style: "currency" });
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
 ];
