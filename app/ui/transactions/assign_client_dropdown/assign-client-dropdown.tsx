@@ -7,7 +7,6 @@ import { Transaction } from "@/app/lib/transactions/types";
 import { Button } from "@/components/ui/button";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -20,6 +19,8 @@ import {
 } from "@/components/ui/popover";
 import { ChevronsUpDown, Loader2 } from "lucide-react";
 import React from "react";
+import UnassignTransactionsModal from "./unassign-transactions-modal";
+import DeleteSingleTransactionModal from "./delete-single-transaction-modal";
 
 export default function AssignClientDropdown({
   transaction,
@@ -27,6 +28,7 @@ export default function AssignClientDropdown({
   transaction: Partial<Transaction>;
 }) {
   const { selectedAccountId } = useAccountId();
+
   const { data: clients, isLoading: loading } = useGetClientsQuery(
     {
       accountId: selectedAccountId,
@@ -37,9 +39,10 @@ export default function AssignClientDropdown({
 
   const [bulkUpdateTransactions, { isLoading: updatingLoading }] =
     useBulkUpdateTransactionMutation();
+
   const [open, setOpen] = React.useState(false);
 
-  const doBulkUpdate = async (clientId: number) => {
+  const handleBulkUpdate = async (clientId: number) => {
     if (!transaction.id) return;
     try {
       await bulkUpdateTransactions({
@@ -60,12 +63,6 @@ export default function AssignClientDropdown({
     );
   }
 
-  if (transaction.clientId) {
-    return (
-      <div className="h-10 flex items-center">{transaction.clientFullName}</div>
-    );
-  }
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -77,34 +74,43 @@ export default function AssignClientDropdown({
           asChild
           disabled={loading}
         >
-          Asignar cliente
-          <ChevronsUpDown className="opacity-50" />
+          {transaction.clientFullName || "Asignar cliente"}
+          <ChevronsUpDown className="opacity-50 ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[250px] p-0">
         <Command>
           <CommandInput placeholder="Buscar cliente..." className="h-9" />
           <CommandList>
-            <CommandEmpty>Cliente no encontrado.</CommandEmpty>
-            <CommandGroup>
+            <CommandGroup heading="Clientes disponibles">
               {clients?.data.map((client) => (
                 <CommandItem
                   key={client.id}
                   value={`${client.code}`}
-                  onSelect={(currentValue) => {
-                    console.log({ currentValue });
-                    doBulkUpdate(client.id);
-                  }}
+                  onSelect={() => handleBulkUpdate(client.id)}
                 >
-                  <div className="flex flex-col gap-y-1">
-                    {client.code}
-                    <p className="text-slate-500 text-xs">
+                  <div className="flex flex-col gap-y-0.5">
+                    <span>{client.code}</span>
+                    <p className="text-muted-foreground text-xs">
                       {client.firstName} {client.lastName}
                     </p>
                   </div>
                 </CommandItem>
               ))}
             </CommandGroup>
+
+            {!transaction.clientId && (
+              <DeleteSingleTransactionModal
+                transaction={transaction}
+                setOpen={setOpen}
+              />
+            )}
+            {transaction.clientId && (
+              <UnassignTransactionsModal
+                transaction={transaction}
+                setOpen={setOpen}
+              />
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

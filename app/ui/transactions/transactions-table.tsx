@@ -22,9 +22,10 @@ import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import { assignedOptions } from "@/app/lib/transactions/data";
 import AssignClientModal from "./assign-client-modal";
-import AssignClientDropdown from "./assign-client-dropdown";
 import { formatNumber } from "@/app/lib/helpers";
 import { useAccountId } from "@/app/context/account-provider";
+import DeleteTransactionsModal from "./delete-transactions-modal";
+import AssignClientDropdown from "./assign_client_dropdown/assign-client-dropdown";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -195,14 +196,27 @@ export default function TransactionsTable() {
         loading={loadingTransactions}
         fetching={fetchingTransactions}
         bottomLeftComponent={
-          table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <AssignClientModal
-              transactions={table
+          <div className="flex items-center gap-4">
+            {table.getFilteredSelectedRowModel().rows.length > 0 && (
+              <AssignClientModal
+                transactions={table
+                  .getFilteredSelectedRowModel()
+                  .rows.map((row) => row.original)}
+                onSuccessAssign={() => table.resetRowSelection()}
+              />
+            )}
+            {table.getFilteredSelectedRowModel().rows.length > 0 &&
+              table
                 .getFilteredSelectedRowModel()
-                .rows.map((row) => row.original)}
-              onSuccessAssign={() => table.resetRowSelection()}
-            />
-          )
+                .rows.every((row) => row.original.clientId === null) && (
+                <DeleteTransactionsModal
+                  transactions={table
+                    .getFilteredSelectedRowModel()
+                    .rows.map((row) => row.original)}
+                  onSuccessDelete={() => table.resetRowSelection()}
+                />
+              )}
+          </div>
         }
       />
     </div>

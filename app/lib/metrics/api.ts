@@ -15,4 +15,4 @@ export const metricsApi = api.injectEndpoints({
   overrideExisting: false, // It's better to keep this false unless overriding
 });
 
-export const { useGetMetricsQuery, useLazyGetMetricsQuery } = metricsApi;
+export const { useLazyGetMetricsQuery } = metricsApi;

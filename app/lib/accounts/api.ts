@@ -57,12 +57,27 @@ export const accountsApi = api
         },
         invalidatesTags: ["Accounts"],
       }),
+      deleteAccount: builder.mutation<string, { id: number }>({
+        query: ({ id }) => {
+          return {
+            url: `/accounts/${id}`,
+            method: "DELETE",
+          };
+        },
+        invalidatesTags: ["Accounts"],
+      }),
     }),
   });
 
 export const {
+  // Accounts
   useGetAccountsQuery,
+  // Account
   useGetAccountByIdQuery,
+  // New Account
   useCreateAccountMutation,
+  // Update account
   useUpdateAccountMutation,
+  // Delete account
+  useDeleteAccountMutation,
 } = accountsApi;
