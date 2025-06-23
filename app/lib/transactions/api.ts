@@ -101,7 +101,7 @@ export const transactionsApi = api
           url: `/transactions/${transactionId}/unassign`,
           method: "PUT",
         }),
-        invalidatesTags: ["Transactions"],
+        invalidatesTags: ["Transactions", "Clients"],
       }),
       bulkDeleteTransaction: builder.mutation<
         string,
