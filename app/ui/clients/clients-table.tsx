@@ -7,24 +7,33 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useRouter } from "next/navigation";
+
 import React, { useMemo, useState } from "react";
 
 import CustomTable from "../custom-table";
 import { Client } from "@/app/lib/clients/types";
 import { useGetClientsQuery } from "@/app/lib/clients/api";
+import ClientActions from "./client-actions";
 
 const columns: ColumnDef<Client>[] = [
   {
     accessorKey: "fullName",
     header: "Cliente",
   },
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      const client = row.original;
+      return <ClientActions client={client} />;
+    },
+    meta: { className: "w-24 text-center" },
+    enableSorting: false,
+  },
 ];
 
 // A table used to display all clients on a table with actions like update/delete?
 export default function ClientsTable() {
-  const router = useRouter();
-
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -76,10 +85,6 @@ export default function ClientsTable() {
     },
   });
 
-  const onRowClick = (client: Client) => {
-    router.push(`/clientes/${client.id}`);
-  };
-
   return (
     <div className="flex flex-col gap-y-6.5">
       {/* Table */}
@@ -89,7 +94,7 @@ export default function ClientsTable() {
         loading={loading}
         fetching={fetchingClients}
         withPagination
-        onRowClick={onRowClick}
+        // onRowClick={(row) => router.push(`/clientes/${row.id}`)}
       />
     </div>
   );

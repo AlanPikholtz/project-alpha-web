@@ -72,6 +72,21 @@ export const clientsApi = api.injectEndpoints({
       },
       invalidatesTags: ["Clients"],
     }),
+    updateClientBalance: builder.mutation<
+      string,
+      { id: number; balance: number }
+    >({
+      query: ({ id, balance }) => {
+        return {
+          url: `/clients/${id}/balance`,
+          method: "PUT",
+          body: {
+            balance,
+          },
+        };
+      },
+      invalidatesTags: ["Clients"],
+    }),
     getClientOperations: builder.query<
       PagedDataResponse<Operation[]>,
       {
@@ -95,16 +110,33 @@ export const clientsApi = api.injectEndpoints({
       },
       providesTags: ["Clients"],
     }),
+    deleteClient: builder.mutation<string, { id: number }>({
+      query: ({ id }) => {
+        return {
+          url: `/clients/${id}`,
+          method: "DELETE",
+        };
+      },
+      invalidatesTags: ["Clients"],
+    }),
   }),
   overrideExisting: false, // It's better to keep this false unless overriding
 });
 
 export const {
+  // Clients
   useGetClientsQuery,
+  // Client
   useGetClientByIdQuery,
   useLazyGetClientByIdQuery,
+  // New clients
   useCreateClientMutation,
+  // Update
   useUpdateClientMutation,
+  // Balance
+  useUpdateClientBalanceMutation,
   // Operations
   useGetClientOperationsQuery,
+  // Delete client
+  useDeleteClientMutation,
 } = clientsApi;

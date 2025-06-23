@@ -22,7 +22,10 @@ export default function SettingsDashboard() {
   const [
     getMetrics,
     { data: metrics, isLoading: loadingMetrics, isFetching: fetchingMetrics },
-  ] = useLazyGetMetricsQuery();
+  ] = useLazyGetMetricsQuery({
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   const [date, setDate] = useState<Date | undefined>(new Date());
 

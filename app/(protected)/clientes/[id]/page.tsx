@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { useParams } from "next/navigation";
 import { useGetClientByIdQuery } from "@/app/lib/clients/api";
 import { Separator } from "@/components/ui/separator";
 import ClientTransactionTable from "@/app/ui/clients/client-transaction-table";
-import { formatNumber } from "@/app/lib/helpers";
 import BackButton from "@/app/ui/back-button";
 import { EditIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ClientCurrentBalance from "@/app/ui/clients/client-current-balance";
 
 export default function ClientPage() {
   const { id } = useParams(); // Get the dynamic ID from the URL
@@ -17,14 +17,6 @@ export default function ClientPage() {
   const { data: client } = useGetClientByIdQuery({
     id: id as unknown as number,
   });
-
-  const formattedBalance = useMemo(() => {
-    if (!client) return;
-    return formatNumber(+client.balance, {
-      style: "currency",
-      currency: "ARS",
-    });
-  }, [client]);
 
   return (
     <div className="flex h-full flex-col gap-y-5">
@@ -42,10 +34,7 @@ export default function ClientPage() {
             <EditIcon className="text-zinc-950" size={18} />
           </div>
 
-          <label className="text-xl font-medium text-zinc-950 leading-7">
-            <span className="text-[#71717A]">Saldo Actual:</span> AR
-            {formattedBalance}
-          </label>
+          <ClientCurrentBalance client={client} />
         </div>
         <Separator />
       </div>
