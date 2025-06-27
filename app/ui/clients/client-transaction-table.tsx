@@ -151,7 +151,7 @@ export default function ClientTransactionTable({
     exportToExcel(
       [
         {
-          name: excelName,
+          name: "Transacciones",
           data: exportData,
           columns: [
             { wch: 25 }, // "Fecha/Hora"
