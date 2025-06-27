@@ -29,7 +29,9 @@ export default function useExcel() {
       type: "application/octet-stream",
     });
 
-    saveAs(blob, `${fileName}.xlsx`);
+    // Excel does not allow file names over 31 chars
+    const truncatedFileName = fileName.slice(0, 31);
+    saveAs(blob, `${truncatedFileName}.xlsx`);
   };
 
   return { exportToExcel };
