@@ -45,7 +45,7 @@ export default function ClientCurrentBalance({ client }: { client?: Client }) {
         balance: parseFloat(newBalance),
       }).unwrap();
       setOpen(false);
-      toast.success("El balance ah sido actualizado.");
+      toast.success("El balance ha sido actualizado.");
     } catch (e) {
       console.error(e);
       toast.error(
