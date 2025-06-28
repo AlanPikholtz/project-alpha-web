@@ -129,7 +129,7 @@ export default function ClientTransactionTable({
   const handleExcelExport = () => {
     if (!operations || operations.data.length === 0 || !client) return;
 
-    const exportData = operations.data.map((t) => ({
+    const exportData = operations.data.map((t, i) => ({
       "Fecha/Hora": new Date(t.date).toLocaleString("es-AR"),
       "Fecha/Hora Asignación": new Date(t.assignedAt).toLocaleString("es-AR"),
       Tipo: transactionTypeToString(t.type),
@@ -145,6 +145,13 @@ export default function ClientTransactionTable({
             style: "currency",
             currency: "ARS",
           }),
+      "Saldo Actual":
+        i === operations.data.length - 1
+          ? formatNumber(+client.balance, {
+              style: "currency",
+              currency: "ARS",
+            })
+          : "",
     }));
 
     const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
@@ -159,6 +166,7 @@ export default function ClientTransactionTable({
             { wch: 20 }, // Tipo
             { wch: 15 }, // Monto
             { wch: 15 }, // A Cliente
+            { wch: 20 }, // A Cliente
           ],
         },
       ],
