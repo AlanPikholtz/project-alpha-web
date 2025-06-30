@@ -12,7 +12,7 @@ export const clientsApi = api.injectEndpoints({
       query: ({ accountId, limit = 0, page }) => {
         const searchParams = new URLSearchParams();
         if (accountId) searchParams.append("accountId", accountId.toString());
-        if (limit) searchParams.append("limit", limit.toString());
+        if (limit !== undefined) searchParams.append("limit", limit.toString());
         if (page) searchParams.append("page", page.toString());
         return {
           url: `/clients?${searchParams.toString()}`,
