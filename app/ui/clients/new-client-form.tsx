@@ -20,12 +20,12 @@ import AccountSelector from "../account-selector";
 import ApiErrorMessage from "../api-error-message";
 
 const formSchema = z.object({
-  lastName: z.string().optional(),
   firstName: z.string().nonempty("Ingrese el Nombre"),
+  lastName: z.string().optional(),
   code: z.string().nonempty("Ingrese el Código"),
   balance: z.string().nonempty("Ingrese el Saldo"),
   commission: z.string().nonempty("Ingrese la comisión"),
-  notes: z.string(),
+  notes: z.string().optional(),
   accountId: z.number(),
 });
 
@@ -39,7 +39,7 @@ export default function NewClientForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: "",
-      lastName: "",
+      lastName: undefined,
       code: "",
       balance: "",
       commission: "",
@@ -49,11 +49,17 @@ export default function NewClientForm() {
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      await createClient(data).unwrap();
+      // Transform empty strings to undefined on optional fields
+      const transformedData = {
+        ...data,
+        lastName: data.lastName || undefined,
+      };
+
+      await createClient(transformedData).unwrap();
       // Redirect
       router.back();
       // Toast
-      toast.success("El cliente ha sido creado.");
+      toast.success("El cliente ha sido creado correctamente.");
     } catch (error) {
       console.log(error);
     }
