@@ -20,10 +20,10 @@ import { toast } from "sonner";
 import { Client } from "@/app/lib/clients/types";
 
 const formSchema = z.object({
-  lastName: z.string().nonempty("Ingrese el Apellido"),
   firstName: z.string().nonempty("Ingrese el Nombre"),
+  lastName: z.string().optional(),
   commission: z.string().nonempty("Ingrese la comisión"),
-  notes: z.string(),
+  notes: z.string().optional(),
   accountId: z.number(),
 });
 export default function UpdateClientForm({ client }: { client: Client }) {
@@ -43,14 +43,19 @@ export default function UpdateClientForm({ client }: { client: Client }) {
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
+      // Transform empty strings to undefined on optional fields
+      const transformedData = {
+        ...data,
+        lastName: data.lastName || undefined,
+      };
       await updateClient({
         id: client.id,
-        ...data,
+        ...transformedData,
       }).unwrap();
       // Redirect
       router.back();
       // Toast
-      toast.success("El cliente ha sido actualizado.");
+      toast.success("El cliente ha sido actualizado correctamente.");
     } catch (error) {
       console.log(error);
     }
@@ -68,11 +73,11 @@ export default function UpdateClientForm({ client }: { client: Client }) {
           <div className="grid grid-cols-2 gap-x-4 gap-y-6">
             <FormField
               control={form.control}
-              name="lastName"
+              name="firstName"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Apellido" {...field} />
+                    <Input placeholder="Nombre" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -80,11 +85,11 @@ export default function UpdateClientForm({ client }: { client: Client }) {
             />
             <FormField
               control={form.control}
-              name="firstName"
+              name="lastName"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Nombre" {...field} />
+                    <Input placeholder="Apellido" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
