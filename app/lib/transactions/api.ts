@@ -43,7 +43,8 @@ export const transactionsApi = api
           if (to) searchParams.append("to", to.toString());
           if (sort) searchParams.append("sort", sort.toString());
           if (order) searchParams.append("order", order.toString());
-          if (limit) searchParams.append("limit", limit.toString());
+          if (limit !== undefined)
+            searchParams.append("limit", limit.toString());
           if (page) searchParams.append("page", page.toString());
           return {
             url: `/transactions?${searchParams.toString()}`,
