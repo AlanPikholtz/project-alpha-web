@@ -22,12 +22,12 @@ import { useAccountId } from "../context/account-provider";
 
 export default function AccountSelector({
   disable,
-  onSelect,
   value,
+  onSelect,
 }: {
   disable?: boolean;
-  onSelect?: (id: number) => void;
   value?: number; // valor controlado
+  onSelect?: (id: number) => void;
 }) {
   const { accounts, loadingAccounts, selectedAccountId, setSelectedAccountId } =
     useAccountId();

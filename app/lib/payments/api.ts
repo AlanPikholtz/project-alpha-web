@@ -12,7 +12,8 @@ export const paymentsApi = api
       >({
         query: ({ limit = 0, page }) => {
           const searchParams = new URLSearchParams();
-          if (limit) searchParams.append("limit", limit.toString());
+          if (limit !== undefined)
+            searchParams.append("limit", limit.toString());
           if (page) searchParams.append("page", page.toString());
           return {
             url: `/payments?${searchParams.toString()}`,

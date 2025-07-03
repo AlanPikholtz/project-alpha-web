@@ -100,7 +100,7 @@ export const clientsApi = api.injectEndpoints({
         const searchParams = new URLSearchParams();
         if (from) searchParams.append("from", from.toString());
         if (to) searchParams.append("to", to.toString());
-        if (limit) searchParams.append("limit", limit.toString());
+        if (limit !== undefined) searchParams.append("limit", limit.toString());
         if (page) searchParams.append("page", page.toString());
         if (sort) searchParams.append("sort", sort.toString());
         return {
