@@ -20,6 +20,7 @@ export const paymentsApi = api
             method: "GET",
           };
         },
+        providesTags: ["Payments"],
       }),
       createPayment: builder.mutation<{ id: number }, Partial<Payment>>({
         query: (payment) => {
@@ -31,8 +32,19 @@ export const paymentsApi = api
         },
         invalidatesTags: ["Payments", "Clients"],
       }),
+      deletePayment: builder.mutation<void, { id: number }>({
+        query: ({ id }) => ({
+          url: `/payments/${id}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Payments", "Clients"],
+      }),
     }),
     overrideExisting: false, // It's better to keep this false unless overriding
   });
 
-export const { useGetPaymentsQuery, useCreatePaymentMutation } = paymentsApi;
+export const {
+  useGetPaymentsQuery,
+  useCreatePaymentMutation,
+  useDeletePaymentMutation,
+} = paymentsApi;
