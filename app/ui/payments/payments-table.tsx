@@ -12,6 +12,7 @@ import { useGetPaymentsQuery } from "@/app/lib/payments/api";
 import _ from "lodash";
 import { paymentMethodToString } from "@/app/lib/payments/helpers";
 import { formatNumber } from "@/app/lib/helpers";
+import DeletePaymentDialog from "./delete-payment-dialog";
 
 const columns: ColumnDef<Payment>[] = [
   {
@@ -41,6 +42,16 @@ const columns: ColumnDef<Payment>[] = [
     },
   },
   { accessorKey: "clientCode", header: "Código de cliente" },
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      const payment = row.original;
+      return <DeletePaymentDialog payment={payment} />;
+    },
+    meta: { className: "w-24 text-center" },
+    enableSorting: false,
+  },
 ];
 
 export default function PaymentsTable() {
