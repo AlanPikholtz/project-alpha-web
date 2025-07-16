@@ -22,7 +22,7 @@ import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import { assignedOptions } from "@/app/lib/transactions/data";
 import AssignClientModal from "./assign-client-modal";
-import { formatNumber } from "@/app/lib/helpers";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
 import { useAccountId } from "@/app/context/account-provider";
 import DeleteTransactionsModal from "./delete-transactions-modal";
 import AssignClientDropdown from "./assign_client_dropdown/assign-client-dropdown";
@@ -55,7 +55,7 @@ const columns: ColumnDef<Transaction>[] = [
     accessorKey: "date",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
+      const formatted = formatDate(row.getValue("date"));
       return formatted;
     },
   },
@@ -98,7 +98,7 @@ export default function TransactionsTable() {
   } = useGetTransactionsQuery(
     {
       accountId: selectedAccountId,
-      amount: +debouncedAmountFilter,
+      ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
       status: statusFilter,
       page: pageIndex + 1, // Current page
       limit: pageSize, // Amount of pages

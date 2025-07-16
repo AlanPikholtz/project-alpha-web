@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useCreateBulkTransactionMutation } from "@/app/lib/transactions/api";
 import { useAccountId } from "@/app/context/account-provider";
 import { useRouter } from "next/navigation";
-import { formatNumber } from "@/app/lib/helpers";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
 import { toast } from "sonner";
 import DuplicatedTransactionsModal from "./duplicated-transactions-modal";
 
@@ -29,7 +29,7 @@ const columns: ColumnDef<Partial<Transaction>>[] = [
     accessorKey: "date",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
+      const formatted = formatDate(row.getValue("date"));
       return formatted;
     },
   },

@@ -6,12 +6,12 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomTable from "../custom-table";
 import { useGetPaymentsQuery } from "@/app/lib/payments/api";
 import _ from "lodash";
 import { paymentMethodToString } from "@/app/lib/payments/helpers";
-import { formatNumber } from "@/app/lib/helpers";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
 import DeletePaymentDialog from "./delete-payment-dialog";
 
 const columns: ColumnDef<Payment>[] = [
@@ -19,9 +19,7 @@ const columns: ColumnDef<Payment>[] = [
     accessorKey: "paymentRequestDate",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = new Date(
-        row.getValue("paymentRequestDate")
-      ).toLocaleString("es-AR");
+      const formatted = formatDate(row.getValue("paymentRequestDate"));
       return formatted;
     },
   },
@@ -54,7 +52,18 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-export default function PaymentsTable() {
+export default function PaymentsTable({
+  amountFilter,
+}: {
+  amountFilter: string;
+}) {
+  // Filters
+  const [debouncedAmountFilter, setDebouncedAmountFilter] =
+    useState<string>("");
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -65,6 +74,7 @@ export default function PaymentsTable() {
     isFetching: fetchingPayments,
   } = useGetPaymentsQuery(
     {
+      ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
       page: pageIndex + 1, // Current page
       limit: pageSize, // Amount of pages
     },
@@ -75,16 +85,13 @@ export default function PaymentsTable() {
     }
   );
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-
   const table = useReactTable({
     data: payments?.data || [],
     columns,
     pageCount: payments?.pages,
     state: {
       columnFilters,
+
       pagination: {
         pageIndex,
         pageSize,
@@ -104,6 +111,25 @@ export default function PaymentsTable() {
       setPageSize(newPagination.pageSize);
     },
   });
+
+  // Amount Search
+  useEffect(() => {
+    const handler = _.debounce((value: string) => {
+      setDebouncedAmountFilter(value);
+    }, 400); // 400ms debounce
+
+    handler(amountFilter);
+
+    // Cancelar debounce si el componente se desmonta o cambia
+    return () => {
+      handler.cancel();
+    };
+  }, [amountFilter]);
+
+  // Reset page on filters change
+  useEffect(() => {
+    setPageIndex(0);
+  }, [debouncedAmountFilter]);
 
   return (
     <CustomTable

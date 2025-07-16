@@ -17,16 +17,18 @@ import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import SortByFilter from "../transactions/filters/sort-by-filter";
 import { sortByOptions } from "@/app/lib/transactions/data";
-import { formatNumber } from "@/app/lib/helpers";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
 import { Client, Operation } from "@/app/lib/clients/types";
 import { useGetClientOperationsQuery } from "@/app/lib/clients/api";
+import { paymentMethodToString } from "@/app/lib/payments/helpers";
+import TypeFilter from "../transactions/filters/type-filter";
 
 const columns: ColumnDef<Operation>[] = [
   {
     accessorKey: "date",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
+      const formatted = formatDate(row.getValue("date"));
       return formatted;
     },
   },
@@ -56,6 +58,16 @@ const columns: ColumnDef<Operation>[] = [
     },
   },
   {
+    accessorKey: "method",
+    header: "Método",
+    cell: ({ row }) => {
+      const method = row.getValue("method");
+      return method
+        ? _.capitalize(paymentMethodToString(row.getValue("method")))
+        : "";
+    },
+  },
+  {
     accessorKey: "clientAmount",
     header: "A Cliente",
     cell: ({ row }) => {
@@ -79,22 +91,28 @@ export default function ClientTransactionTable({
   const [sortByFilter, setSortByFilter] = useState<SortBy | undefined>(
     sortByOptions[0].value as SortBy | undefined
   );
+  const [typeFilter, setTypeFilter] = useState<
+    "transactions" | "payments" | "all"
+  >("all");
   const [dateRange, setDateRange] = useState<DateRange>();
-  // const [typeFilter, setTypeFilter] = useState<unknown>();
 
   // Pagination
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const { data: operations, isLoading: loadingOperations } =
-    useGetClientOperationsQuery({
-      clientId: id as unknown as number,
-      page: pageIndex + 1, // Current page
-      limit: pageSize, // Amount of pages
-      from: dateRange?.from?.toISOString(),
-      to: dateRange?.to?.toISOString(),
-      sort: sortByFilter,
-    });
+  const {
+    data: operations,
+    isLoading: loadingOperations,
+    isFetching: fetchingOperations,
+  } = useGetClientOperationsQuery({
+    clientId: id as unknown as number,
+    type: typeFilter,
+    page: pageIndex + 1, // Current page
+    limit: pageSize, // Amount of pages
+    from: dateRange?.from?.toISOString(),
+    to: dateRange?.to?.toISOString(),
+    sort: sortByFilter,
+  });
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -130,8 +148,8 @@ export default function ClientTransactionTable({
     if (!operations || operations.data.length === 0 || !client) return;
 
     const exportData = operations.data.map((t, i) => ({
-      "Fecha/Hora": new Date(t.date).toLocaleString("es-AR"),
-      "Fecha/Hora Asignación": new Date(t.assignedAt).toLocaleString("es-AR"),
+      "Fecha/Hora": formatDate(t.date),
+      "Fecha/Hora Asignación": formatDate(t.assignedAt),
       Tipo: transactionTypeToString(t.type),
       Monto: _.isNaN(parseFloat(t.amount))
         ? "-"
@@ -139,6 +157,7 @@ export default function ClientTransactionTable({
             style: "currency",
             currency: "ARS",
           }),
+      Método: t.method ? _.capitalize(paymentMethodToString(t.method)) : "",
       "A Cliente": _.isNaN(parseFloat(t.clientAmount))
         ? "-"
         : formatNumber(parseFloat(t.clientAmount), {
@@ -165,8 +184,8 @@ export default function ClientTransactionTable({
             { wch: 25 }, // "Fecha/Hora Asignación"
             { wch: 20 }, // Tipo
             { wch: 15 }, // Monto
+            { wch: 15 }, // Método
             { wch: 15 }, // A Cliente
-            { wch: 20 }, // A Cliente
           ],
         },
       ],
@@ -183,17 +202,21 @@ export default function ClientTransactionTable({
     <div className="flex flex-col gap-y-6.5">
       {/* Filters */}
       <div className="flex gap-4 justify-between items-center py-4">
-        <SortByFilter
-          sortByFilter={sortByFilter}
-          setSortByFilter={setSortByFilter}
-        />
         <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
+        <div className="flex items-center gap-4">
+          <TypeFilter type={typeFilter} setType={setTypeFilter} />
+          <SortByFilter
+            sortByFilter={sortByFilter}
+            setSortByFilter={setSortByFilter}
+          />
+        </div>
       </div>
       {/* Table */}
       <CustomTable
         columns={columns}
         table={table}
         loading={loadingOperations}
+        fetching={fetchingOperations}
         withPagination
         bottomLeftComponent={
           <Button

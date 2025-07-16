@@ -8,13 +8,15 @@ export const paymentsApi = api
     endpoints: (builder) => ({
       getPayments: builder.query<
         PagedDataResponse<Payment[]>,
-        PagedQueryParams
+        PagedQueryParams & { amount?: number }
       >({
-        query: ({ limit = 0, page }) => {
+        query: ({ limit = 0, page, amount }) => {
           const searchParams = new URLSearchParams();
           if (limit !== undefined)
             searchParams.append("limit", limit.toString());
           if (page) searchParams.append("page", page.toString());
+          if (amount !== undefined)
+            searchParams.append("amount", amount.toString());
           return {
             url: `/payments?${searchParams.toString()}`,
             method: "GET",
