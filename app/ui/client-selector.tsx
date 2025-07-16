@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import React from "react";
+import React, { useMemo } from "react";
 import { useGetClientsQuery } from "../lib/clients/api";
 import { Input } from "@/components/ui/input";
 import { useAccountId } from "../context/account-provider";
@@ -30,6 +30,7 @@ export default function ClientSelector({
   const { selectedAccountId } = useAccountId();
 
   const [open, setOpen] = React.useState(false);
+  const [searchValue, setSearchValue] = React.useState("");
   const { data: clients, isLoading: loading } = useGetClientsQuery(
     {
       accountId: !allClients ? selectedAccountId : undefined,
@@ -43,6 +44,19 @@ export default function ClientSelector({
     }
   );
 
+  const filteredClients = useMemo(
+    () =>
+      clients?.data.filter((client) => {
+        const searchLower = searchValue.toLowerCase();
+        return (
+          client.code.toLowerCase().includes(searchLower) ||
+          client.firstName.toLowerCase().includes(searchLower) ||
+          client.lastName.toLowerCase().includes(searchLower)
+        );
+      }),
+    [clients?.data, searchValue]
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger>
@@ -54,19 +68,23 @@ export default function ClientSelector({
           readOnly
         />
       </PopoverTrigger>
-      <PopoverContent className=" p-0">
+      <PopoverContent className="p-0">
         <Command>
-          <CommandInput placeholder="Buscar cliente..." className="h-9" />
+          <CommandInput
+            placeholder="Buscar cliente..."
+            className="h-9"
+            value={searchValue}
+            onValueChange={setSearchValue}
+          />
           <CommandList>
             <CommandEmpty>Cliente no encontrado.</CommandEmpty>
             <CommandGroup>
-              {clients?.data.map((client) => (
+              {filteredClients?.map((client) => (
                 <CommandItem
                   key={client.id}
-                  value={`${client.id}`}
-                  onSelect={(currentValue) => {
-                    console.log({ currentValue });
-                    setValue(currentValue);
+                  value={`${client.code} ${client.firstName} ${client.lastName}`}
+                  onSelect={() => {
+                    setValue(client.id.toString());
                     setOpen(false);
                   }}
                 >
