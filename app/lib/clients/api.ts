@@ -91,15 +91,13 @@ export const clientsApi = api.injectEndpoints({
       PagedDataResponse<Operation[]>,
       {
         clientId: number;
-        type?: "transactions" | "payments" | "all";
         from?: string;
         to?: string;
         sort?: SortBy;
       } & PagedQueryParams
     >({
-      query: ({ clientId, type, from, to, limit, page, sort }) => {
+      query: ({ clientId, from, to, limit, page, sort }) => {
         const searchParams = new URLSearchParams();
-        if (type) searchParams.append("type", type.toString());
         if (from) searchParams.append("from", from.toString());
         if (to) searchParams.append("to", to.toString());
         if (limit !== undefined) searchParams.append("limit", limit.toString());
