@@ -1,4 +1,3 @@
-import { PaymentMethod } from "../payments/types";
 import { TransactionType } from "../transactions/types";
 
 export interface Client {
@@ -21,5 +20,4 @@ export interface Operation {
   currency: string;
   clientAmount: string;
   assignedAt: string;
-  method: PaymentMethod; // Just for payment type
 }

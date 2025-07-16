@@ -17,14 +17,14 @@ import {
 } from "@tanstack/react-table";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
-import { formatDate, formatNumber } from "@/app/lib/helpers";
+import { formatNumber } from "@/app/lib/helpers";
 
 const columns: ColumnDef<Partial<Transaction>>[] = [
   {
     accessorKey: "date",
     header: "Fecha/Hora",
     cell: ({ row }) => {
-      const formatted = formatDate(row.getValue("date"));
+      const formatted = new Date(row.getValue("date")).toLocaleString("es-AR");
       return formatted;
     },
   },

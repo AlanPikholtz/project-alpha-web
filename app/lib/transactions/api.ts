@@ -38,8 +38,7 @@ export const transactionsApi = api
           if (accountId) searchParams.append("accountId", accountId.toString());
           if (clientId) searchParams.append("clientId", clientId.toString());
           if (status) searchParams.append("status", status.toString());
-          if (amount !== undefined)
-            searchParams.append("amount", amount.toString());
+          if (amount) searchParams.append("amount", amount.toString());
           if (from) searchParams.append("from", from.toString());
           if (to) searchParams.append("to", to.toString());
           if (sort) searchParams.append("sort", sort.toString());
