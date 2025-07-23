@@ -151,26 +151,12 @@ export default function ClientTransactionTable({
       "Fecha/Hora": formatDate(t.date),
       "Fecha/Hora Asignación": formatDate(t.assignedAt),
       Tipo: transactionTypeToString(t.type),
-      Monto: _.isNaN(parseFloat(t.amount))
-        ? "-"
-        : formatNumber(parseFloat(t.amount), {
-            style: "currency",
-            currency: "ARS",
-          }),
+      Monto: _.isNaN(parseFloat(t.amount)) ? "-" : parseFloat(t.amount),
       Método: t.method ? _.capitalize(paymentMethodToString(t.method)) : "",
       "A Cliente": _.isNaN(parseFloat(t.clientAmount))
         ? "-"
-        : formatNumber(parseFloat(t.clientAmount), {
-            style: "currency",
-            currency: "ARS",
-          }),
-      "Saldo Actual":
-        i === operations.data.length - 1
-          ? formatNumber(+client.balance, {
-              style: "currency",
-              currency: "ARS",
-            })
-          : "",
+        : parseFloat(t.clientAmount),
+      "Saldo Actual": i === operations.data.length - 1 ? +client.balance : "",
     }));
 
     const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
