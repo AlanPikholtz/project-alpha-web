@@ -115,7 +115,7 @@ export default function NewTransactionsPage() {
         <div className="flex items-center justify-between">
           <AccountSelector disable />
           <Button
-            disabled={pastedDataWatch.length === 0}
+            disabled={!pastedDataWatch || pastedDataWatch?.length === 0}
             onClick={form.handleSubmit(handleContinue)}
           >
             Continuar
