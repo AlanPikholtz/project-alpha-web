@@ -1,7 +1,6 @@
 "use client";
 
 import { useAccountId } from "@/app/context/account-provider";
-import { formatDate } from "@/app/lib/helpers";
 import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { mapStringToTransactions } from "@/app/lib/transactions/helpers";
 import { Transaction } from "@/app/lib/transactions/types";
@@ -153,7 +152,9 @@ export default function NewTransactionsPage() {
           {!loadingTransactions && transactions?.data[0] ? (
             <div className="flex self-end items-center gap-x-2.5">
               <label className="text-[#71717A]">Última transacción</label>
-              <label>{formatDate(transactions?.data[0].date)}</label>
+              <label>
+                {new Date(transactions?.data[0].date).toLocaleString("es-AR")}
+              </label>
             </div>
           ) : null}
         </div>
