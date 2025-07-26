@@ -19,10 +19,11 @@ export default function ClientPage() {
   });
 
   return (
-    <div className="flex h-full flex-col gap-y-5">
+    <div className="h-full flex flex-col gap-y-5 overflow-hidden">
       <BackButton />
-      {/* We should define h1, h2, etc. for this stuff */}
-      <div className="flex flex-col gap-y-11">
+
+      {/* Header section with fixed height */}
+      <div className="flex flex-col gap-y-11 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div
             className="flex flex-row items-center gap-x-2 hover:underline hover:cursor-pointer"
@@ -39,7 +40,10 @@ export default function ClientPage() {
         <Separator />
       </div>
 
-      <ClientTransactionTable client={client} />
+      {/* Table section that grows to fill remaining space */}
+      <div className="flex-1 min-h-0">
+        <ClientTransactionTable />
+      </div>
     </div>
   );
 }

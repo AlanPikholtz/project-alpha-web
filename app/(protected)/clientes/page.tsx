@@ -14,15 +14,17 @@ export default function ClientsPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="h-full flex flex-col gap-y-4 overflow-hidden">
       <Button
-        className="self-start"
+        className="self-start flex-shrink-0"
         onClick={() => router.push("/clientes/nuevo")}
       >
         <CirclePlus />
         Nuevo Cliente
       </Button>
-      <ClientsTable />
+      <div className="flex-1 min-h-0">
+        <ClientsTable />
+      </div>
     </div>
   );
 }

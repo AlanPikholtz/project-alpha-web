@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+  useMemo,
+} from "react";
 import { useGetAccountsQuery } from "../lib/accounts/api";
 import { Account } from "../lib/accounts/types";
 
@@ -28,15 +35,19 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
     null
   );
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      accounts: accounts?.data || [],
+      loadingAccounts: loadingAccounts,
+      selectedAccountId,
+      setSelectedAccountId,
+    }),
+    [accounts?.data, loadingAccounts, selectedAccountId]
+  );
+
   return (
-    <AccountContext.Provider
-      value={{
-        accounts: accounts?.data || [],
-        loadingAccounts: loadingAccounts,
-        selectedAccountId,
-        setSelectedAccountId,
-      }}
-    >
+    <AccountContext.Provider value={contextValue}>
       {children}
     </AccountContext.Provider>
   );

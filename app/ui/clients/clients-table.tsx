@@ -1,24 +1,40 @@
 "use client";
 
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import React, { useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 
-import React, { useMemo, useState } from "react";
-
-import CustomTable from "../custom-table";
-import { Client } from "@/app/lib/clients/types";
+import SimpleInfiniteTable from "../simple-infinite-table";
+import { useMinimalInfinite } from "@/app/hooks/use-minimal-infinite";
 import { useGetClientsQuery } from "@/app/lib/clients/api";
+import { Client } from "@/app/lib/clients/types";
 import ClientActions from "./client-actions";
+import { formatNumber } from "@/app/lib/helpers";
+import { useAccountId } from "@/app/context/account-provider";
 
 const columns: ColumnDef<Client>[] = [
   {
+    accessorKey: "code",
+    header: "Código",
+  },
+  {
     accessorKey: "fullName",
-    header: "Cliente",
+    header: "Nombre Completo",
+  },
+  {
+    accessorKey: "balance",
+    header: "Balance",
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("balance"));
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
+    },
+  },
+  {
+    accessorKey: "commission",
+    header: "Comisión",
+    cell: ({ row }) => {
+      const commission = parseFloat(row.getValue("commission"));
+      return `${commission}%`;
+    },
   },
   {
     id: "actions",
@@ -32,70 +48,52 @@ const columns: ColumnDef<Client>[] = [
   },
 ];
 
-// A table used to display all clients on a table with actions like update/delete?
 export default function ClientsTable() {
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const { selectedAccountId } = useAccountId();
 
+  // Use the new ULTRA-MINIMAL infinite scroll
   const {
     data: clients,
-    isLoading: loading,
-    isFetching: fetchingClients,
-  } = useGetClientsQuery({
-    // accountId: selectedAccountId,
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-  });
-
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    total,
+  } = useMinimalInfinite<Client, Parameters<typeof useGetClientsQuery>[0]>(
+    useGetClientsQuery,
+    { accountId: selectedAccountId },
+    { pageSize: 20 }
   );
 
-  // Lets map clients for now to get the full name, this could be asked to BE
+  // Map clients to include fullName for display
   const mappedClients = useMemo(() => {
-    return clients?.data.map((x) => {
-      return { ...x, fullName: `${x.firstName} ${x.lastName}` };
-    });
-  }, [clients?.data]);
+    return clients.map((client) => ({
+      ...client,
+      fullName: `${client.firstName} ${client.lastName}`,
+    }));
+  }, [clients]);
 
-  const table = useReactTable({
-    data: mappedClients || [],
-    columns,
-    pageCount: clients?.pages,
-    state: {
-      columnFilters,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
+  // Show loading when account is not selected yet
+  if (selectedAccountId === null) {
+    return (
+      <div className="h-full flex flex-col gap-y-6">
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <div className="text-muted-foreground">Cargando cuenta...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-y-6.5">
-      {/* Table */}
-      <CustomTable
-        columns={columns}
-        table={table}
-        loading={loading}
-        fetching={fetchingClients}
-        withPagination
-        // onRowClick={(row) => router.push(`/clientes/${row.id}`)}
-      />
-    </div>
+    <SimpleInfiniteTable
+      columns={columns}
+      data={mappedClients}
+      loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
+      total={total}
+      // onRowClick={(row) => router.push(`/clientes/${row.id}`)}
+    />
   );
 }

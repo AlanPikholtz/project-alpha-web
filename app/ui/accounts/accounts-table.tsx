@@ -1,14 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  ColumnDef,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import React from "react";
+import { ColumnDef } from "@tanstack/react-table";
 
-import CustomTable from "../custom-table";
+import SimpleInfiniteTable from "../simple-infinite-table";
+import { useMinimalInfinite } from "@/app/hooks/use-minimal-infinite";
 import { useGetAccountsQuery } from "@/app/lib/accounts/api";
 import { Account } from "@/app/lib/accounts/types";
 import AccountActions from "./account-actions";
@@ -31,50 +27,29 @@ const columns: ColumnDef<Account>[] = [
 ];
 
 export default function AccountsTable() {
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
-
+  // Use the new MINIMAL infinite scroll
   const {
     data: accounts,
-    isLoading: loadingAccounts,
-    isFetching: fetchingAccounts,
-  } = useGetAccountsQuery({
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-  });
-
-  const table = useReactTable({
-    data: accounts?.data || [],
-    columns,
-    pageCount: accounts?.pages,
-    state: {
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    total,
+  } = useMinimalInfinite<Account, Parameters<typeof useGetAccountsQuery>[0]>(
+    useGetAccountsQuery,
+    {}, // No base args needed for accounts
+    { pageSize: 20 }
+  );
 
   return (
-    <CustomTable
+    <SimpleInfiniteTable
       columns={columns}
-      table={table}
-      withPagination
-      loading={loadingAccounts}
-      fetching={fetchingAccounts}
+      data={accounts}
+      loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
+      total={total}
     />
   );
 }

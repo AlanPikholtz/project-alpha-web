@@ -1,18 +1,15 @@
-import { Payment } from "@/app/lib/payments/types";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+"use client";
+
 import React, { useEffect, useState } from "react";
-import CustomTable from "../custom-table";
+import { ColumnDef } from "@tanstack/react-table";
+
+import SimpleInfiniteTable from "../simple-infinite-table";
+import { useMinimalInfinite } from "@/app/hooks/use-minimal-infinite";
 import { useGetPaymentsQuery } from "@/app/lib/payments/api";
-import _ from "lodash";
-import { paymentMethodToString } from "@/app/lib/payments/helpers";
 import { formatDate, formatNumber } from "@/app/lib/helpers";
+import { Payment } from "@/app/lib/payments/types";
 import DeletePaymentDialog from "./delete-payment-dialog";
+import _ from "lodash";
 
 const columns: ColumnDef<Payment>[] = [
   {
@@ -31,15 +28,10 @@ const columns: ColumnDef<Payment>[] = [
       return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
-  { accessorKey: "currency", header: "Moneda" },
   {
-    accessorKey: "method",
-    header: "Método",
-    cell: ({ row }) => {
-      return _.capitalize(paymentMethodToString(row.getValue("method")));
-    },
+    accessorKey: "clientCode",
+    header: "Código de Cliente",
   },
-  { accessorKey: "clientCode", header: "Código de cliente" },
   {
     id: "actions",
     header: "Acciones",
@@ -60,84 +52,45 @@ export default function PaymentsTable({
   // Filters
   const [debouncedAmountFilter, setDebouncedAmountFilter] =
     useState<string>("");
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
 
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
-
-  const {
-    data: payments,
-    isLoading: loadingPayments,
-    isFetching: fetchingPayments,
-  } = useGetPaymentsQuery(
-    {
-      ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
-      page: pageIndex + 1, // Current page
-      limit: pageSize, // Amount of pages
-    },
-    {
-      refetchOnFocus: true,
-      refetchOnMountOrArgChange: true,
-      refetchOnReconnect: true,
-    }
-  );
-
-  const table = useReactTable({
-    data: payments?.data || [],
-    columns,
-    pageCount: payments?.pages,
-    state: {
-      columnFilters,
-
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
-
-  // Amount Search
+  // Amount Search debouncing
   useEffect(() => {
     const handler = _.debounce((value: string) => {
       setDebouncedAmountFilter(value);
-    }, 400); // 400ms debounce
+    }, 400);
 
     handler(amountFilter);
 
-    // Cancelar debounce si el componente se desmonta o cambia
     return () => {
       handler.cancel();
     };
   }, [amountFilter]);
 
-  // Reset page on filters change
-  useEffect(() => {
-    setPageIndex(0);
-  }, [debouncedAmountFilter]);
+  // Use the new MINIMAL infinite scroll
+  const {
+    data: payments,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    total,
+  } = useMinimalInfinite<Payment, Parameters<typeof useGetPaymentsQuery>[0]>(
+    useGetPaymentsQuery,
+    {
+      ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
+    },
+    { pageSize: 20 }
+  );
 
   return (
-    <CustomTable
+    <SimpleInfiniteTable
       columns={columns}
-      table={table}
-      loading={loadingPayments}
-      fetching={fetchingPayments}
-      withPagination
+      data={payments}
+      loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
+      total={total}
     />
   );
 }

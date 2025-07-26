@@ -1,27 +1,23 @@
+"use client";
+
+import React, { useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+
+import SimpleInfiniteTable from "../simple-infinite-table";
+import { useMinimalInfinite } from "@/app/hooks/use-minimal-infinite";
+import { useGetClientOperationsQuery } from "@/app/lib/clients/api";
+import { Operation } from "@/app/lib/clients/types";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
+import useExcel from "@/app/hooks/useExcel";
 import { SortBy } from "@/app/lib/transactions/types";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import React, { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import DateRangeFilter from "../transactions/filters/date-range-filter";
-import CustomTable from "../custom-table";
-import { useParams } from "next/navigation";
-import useExcel from "@/app/hooks/useExcel";
-import { Button } from "@/components/ui/button";
-import { transactionTypeToString } from "@/app/lib/transactions/helpers";
-import _ from "lodash";
 import SortByFilter from "../transactions/filters/sort-by-filter";
-import { sortByOptions } from "@/app/lib/transactions/data";
-import { formatDate, formatNumber } from "@/app/lib/helpers";
-import { Client, Operation } from "@/app/lib/clients/types";
-import { useGetClientOperationsQuery } from "@/app/lib/clients/api";
-import { paymentMethodToString } from "@/app/lib/payments/helpers";
 import TypeFilter from "../transactions/filters/type-filter";
+import { sortByOptions } from "@/app/lib/transactions/data";
 
 const columns: ColumnDef<Operation>[] = [
   {
@@ -33,20 +29,11 @@ const columns: ColumnDef<Operation>[] = [
     },
   },
   {
-    accessorKey: "assignedAt",
-    header: "Fecha/Hora Asignación",
-    cell: ({ row }) => {
-      const formatted = new Date(row.getValue("assignedAt")).toLocaleString(
-        "es-AR"
-      );
-      return formatted;
-    },
-  },
-  {
     accessorKey: "type",
     header: "Tipo",
     cell: ({ row }) => {
-      return _.capitalize(transactionTypeToString(row.getValue("type")));
+      const type = row.getValue("type") as string;
+      return type === "transaction" ? "Transacción" : "Pago";
     },
   },
   {
@@ -57,34 +44,10 @@ const columns: ColumnDef<Operation>[] = [
       return formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
-  {
-    accessorKey: "method",
-    header: "Método",
-    cell: ({ row }) => {
-      const method = row.getValue("method");
-      return method
-        ? _.capitalize(paymentMethodToString(row.getValue("method")))
-        : "";
-    },
-  },
-  {
-    accessorKey: "clientAmount",
-    header: "A Cliente",
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("clientAmount"));
-      if (_.isNaN(amount)) return "-";
-      return formatNumber(amount, { style: "currency", currency: "ARS" });
-    },
-  },
 ];
 
-export default function ClientTransactionTable({
-  client,
-}: {
-  client?: Client;
-}) {
+export default function ClientTransactionTable() {
   const { id } = useParams(); // Get the dynamic ID from the URL
-
   const { exportToExcel } = useExcel();
 
   // Filters
@@ -96,124 +59,76 @@ export default function ClientTransactionTable({
   >("all");
   const [dateRange, setDateRange] = useState<DateRange>();
 
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
-
+  // Use the new MINIMAL infinite scroll
   const {
     data: operations,
-    isLoading: loadingOperations,
-    isFetching: fetchingOperations,
-  } = useGetClientOperationsQuery({
-    clientId: id as unknown as number,
-    type: typeFilter,
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-    from: dateRange?.from?.toISOString(),
-    to: dateRange?.to?.toISOString(),
-    sort: sortByFilter,
-  });
-
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    total,
+  } = useMinimalInfinite<
+    Operation,
+    Parameters<typeof useGetClientOperationsQuery>[0]
+  >(
+    useGetClientOperationsQuery,
+    {
+      clientId: id as unknown as number,
+      type: typeFilter,
+      from: dateRange?.from?.toISOString(),
+      to: dateRange?.to?.toISOString(),
+      sort: sortByFilter,
+    },
+    { pageSize: 20 }
   );
 
-  const table = useReactTable({
-    data: operations?.data || [],
-    columns,
-    pageCount: operations?.pages,
-    state: {
-      columnFilters,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
-
-  const handleExcelExport = () => {
-    if (!operations || operations.data.length === 0 || !client) return;
-
-    const exportData = operations.data.map((t, i) => ({
-      "Fecha/Hora": formatDate(t.date),
-      "Fecha/Hora Asignación": formatDate(t.assignedAt),
-      Tipo: transactionTypeToString(t.type),
-      Monto: _.isNaN(parseFloat(t.amount)) ? "-" : parseFloat(t.amount),
-      Método: t.method ? _.capitalize(paymentMethodToString(t.method)) : "",
-      "A Cliente": _.isNaN(parseFloat(t.clientAmount))
-        ? "-"
-        : parseFloat(t.clientAmount),
-      "Saldo Actual": i === operations.data.length - 1 ? +client.balance : "",
-    }));
-
-    const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
-    exportToExcel(
-      [
-        {
-          name: "Transacciones",
-          data: exportData,
-          columns: [
-            { wch: 25 }, // "Fecha/Hora"
-            { wch: 25 }, // "Fecha/Hora Asignación"
-            { wch: 20 }, // Tipo
-            { wch: 15 }, // Monto
-            { wch: 15 }, // Método
-            { wch: 15 }, // A Cliente
-          ],
-        },
-      ],
-      excelName
-    );
-  };
-
-  // Reset page on filters change
-  useEffect(() => {
-    setPageIndex(0);
-  }, [sortByFilter, dateRange]);
-
   return (
-    <div className="flex flex-col gap-y-6.5">
+    <div className="h-full flex flex-col gap-y-6">
       {/* Filters */}
-      <div className="flex gap-4 justify-between items-center py-4">
+      <div className="flex gap-4 justify-between items-center py-4 flex-shrink-0">
         <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
-        <div className="flex items-center gap-4">
-          <TypeFilter type={typeFilter} setType={setTypeFilter} />
-          <SortByFilter
-            sortByFilter={sortByFilter}
-            setSortByFilter={setSortByFilter}
-          />
-        </div>
+        <SortByFilter
+          sortByFilter={sortByFilter}
+          setSortByFilter={setSortByFilter}
+        />
+        <TypeFilter type={typeFilter} setType={setTypeFilter} />
+        <Button
+          className="flex gap-2 items-center"
+          variant="outline"
+          onClick={() =>
+            exportToExcel(
+              [
+                {
+                  name: "Operaciones",
+                  data: operations.map((op) => ({
+                    "Fecha/Hora": formatDate(op.date),
+                    Tipo: op.type,
+                    Monto: parseFloat(op.amount),
+                  })),
+                },
+              ],
+              "client-operations"
+            )
+          }
+          disabled={operations.length === 0}
+        >
+          <Download className="w-4 h-4" />
+          Exportar
+        </Button>
       </div>
+
       {/* Table */}
-      <CustomTable
-        columns={columns}
-        table={table}
-        loading={loadingOperations}
-        fetching={fetchingOperations}
-        withPagination
-        bottomLeftComponent={
-          <Button
-            className="self-start"
-            disabled={operations && operations?.data.length === 0}
-            onClick={handleExcelExport}
-          >
-            Exportar
-          </Button>
-        }
-      />
+      <div className="flex-1 min-h-0">
+        <SimpleInfiniteTable
+          columns={columns}
+          data={operations}
+          loading={loading}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          total={total}
+        />
+      </div>
     </div>
   );
 }
