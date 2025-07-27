@@ -42,7 +42,7 @@ export default function ClientPage() {
 
       {/* Table section that grows to fill remaining space */}
       <div className="flex-1 min-h-0">
-        <ClientTransactionTable />
+        <ClientTransactionTable client={client} />
       </div>
     </div>
   );

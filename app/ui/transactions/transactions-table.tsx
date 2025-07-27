@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "../../../components/ui/checkbox";
@@ -10,15 +10,24 @@ import { DateRange } from "react-day-picker";
 import DateRangeFilter from "./filters/date-range-filter";
 import StatusFilter from "./filters/status-filter";
 import SimpleInfiniteTable from "../simple-infinite-table";
-import { Transaction, TransactionStatus } from "@/app/lib/transactions/types";
-import { useMinimalInfinite } from "@/app/hooks/use-minimal-infinite";
-import { useGetTransactionsQuery } from "@/app/lib/transactions/api";
+import {
+  Transaction,
+  TransactionStatus,
+  SortBy,
+} from "@/app/lib/transactions/types";
+import {
+  useMinimalInfinite,
+  FetchPageFn,
+} from "@/app/hooks/use-minimal-infinite";
+import { useLazyGetTransactionsQuery } from "@/app/lib/transactions/api";
 import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import _ from "lodash";
 import { assignedOptions } from "@/app/lib/transactions/data";
 import { formatDate, formatNumber } from "@/app/lib/helpers";
 import { useAccountId } from "@/app/context/account-provider";
 import AssignClientDropdown from "./assign_client_dropdown/assign-client-dropdown";
+import AssignClientModal from "./assign-client-modal";
+import DeleteTransactionsModal from "./delete-transactions-modal";
 
 const columns: ColumnDef<Transaction>[] = [
   {
@@ -81,6 +90,9 @@ export default function TransactionsTable() {
   >(assignedOptions[0].value as TransactionStatus | undefined);
   const [dateRange, setDateRange] = useState<DateRange>();
 
+  // Row selection state
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
   // Amount Search debouncing
   useEffect(() => {
     const handler = _.debounce((value: string) => {
@@ -94,19 +106,44 @@ export default function TransactionsTable() {
     };
   }, [amountFilter]);
 
-  // Use the new MINIMAL infinite scroll
+  // Create lazy query trigger - like your React Native pattern
+  const [fetchTransactions] = useLazyGetTransactionsQuery();
+
+  // Create fetchPage function - similar to your getSubCollections
+  const fetchPage: FetchPageFn<Transaction> = useCallback(
+    async (params) => {
+      console.log("🔥 fetchPage called with:", params);
+
+      const result = await fetchTransactions({
+        page: params.page,
+        limit: params.limit,
+        accountId: params.accountId as number,
+        ...(params.amount ? { amount: params.amount as number } : {}),
+        status: params.status as TransactionStatus,
+        from: params.from as string,
+        to: params.to as string,
+        sort: params.sort as SortBy,
+      }).unwrap();
+
+      return result;
+    },
+    [fetchTransactions]
+  );
+
+  // Use the new React Native-style infinite hook
   const {
     data: transactions,
     loading,
     loadingMore,
     hasMore,
     total,
+    error,
     loadMore,
-  } = useMinimalInfinite<
-    Transaction,
-    Parameters<typeof useGetTransactionsQuery>[0]
-  >(
-    useGetTransactionsQuery,
+    optimisticUpdate,
+    optimisticDelete,
+    refresh,
+  } = useMinimalInfinite<Transaction>(
+    fetchPage,
     {
       accountId: selectedAccountId,
       ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
@@ -124,10 +161,34 @@ export default function TransactionsTable() {
       accessorKey: "clientFullName",
       header: "Cliente",
       cell: ({ row }) => {
-        return <AssignClientDropdown transaction={row.original} />;
+        return (
+          <AssignClientDropdown
+            transaction={row.original}
+            onOptimisticUpdate={optimisticUpdate}
+            onOptimisticDelete={optimisticDelete}
+            onError={refresh}
+          />
+        );
       },
     });
     return dynamicCols;
+  }, [optimisticUpdate, optimisticDelete, refresh]);
+
+  // Get selected transactions
+  const selectedTransactions = useMemo(() => {
+    return transactions.filter((_, index) => rowSelection[index]);
+  }, [transactions, rowSelection]);
+
+  // Handle successful bulk assign
+  const handleSuccessAssign = useCallback(() => {
+    setRowSelection({});
+    // No refresh needed - optimistic updates already handled the data changes
+  }, []);
+
+  // Handle successful bulk delete
+  const handleSuccessDelete = useCallback(() => {
+    setRowSelection({});
+    // No refresh needed - optimistic updates already handled the data changes
   }, []);
 
   // Show loading when account is not selected yet
@@ -165,9 +226,30 @@ export default function TransactionsTable() {
           hasMore={hasMore}
           onLoadMore={loadMore}
           total={total}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
           bottomLeftComponent={
             <div className="flex items-center gap-4">
-              {/* Note: Row selection with infinite scroll */}
+              {selectedTransactions.length > 0 && (
+                <AssignClientModal
+                  transactions={selectedTransactions}
+                  onSuccessAssign={handleSuccessAssign}
+                  onOptimisticUpdate={optimisticUpdate}
+                />
+              )}
+              {selectedTransactions.length > 0 &&
+                selectedTransactions.every(
+                  (t) => !t.clientId || t.clientId === 0
+                ) && (
+                  <DeleteTransactionsModal
+                    transactions={selectedTransactions}
+                    onSuccessDelete={handleSuccessDelete}
+                    onOptimisticDelete={optimisticDelete}
+                  />
+                )}
+              {error && (
+                <div className="text-red-500 text-sm">Error cargando datos</div>
+              )}
             </div>
           }
         />

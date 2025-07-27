@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 
 import SimpleInfiniteTable from "../simple-infinite-table";
-import { useMinimalInfinite } from "@/app/hooks/use-minimal-infinite";
-import { useGetClientsQuery } from "@/app/lib/clients/api";
+import {
+  useMinimalInfinite,
+  FetchPageFn,
+} from "@/app/hooks/use-minimal-infinite";
+import { useLazyGetClientsQuery } from "@/app/lib/clients/api";
 import { Client } from "@/app/lib/clients/types";
 import ClientActions from "./client-actions";
 import { formatNumber } from "@/app/lib/helpers";
-import { useAccountId } from "@/app/context/account-provider";
 
-const columns: ColumnDef<Client>[] = [
+const columns: ColumnDef<Client & { fullName: string }>[] = [
   {
     accessorKey: "code",
     header: "Código",
@@ -49,19 +51,36 @@ const columns: ColumnDef<Client>[] = [
 ];
 
 export default function ClientsTable() {
-  const { selectedAccountId } = useAccountId();
+  // Create lazy query trigger
+  const [fetchClients] = useLazyGetClientsQuery();
 
-  // Use the new ULTRA-MINIMAL infinite scroll
+  // Create fetchPage function
+  const fetchPage: FetchPageFn<Client> = useCallback(
+    async (params) => {
+      const result = await fetchClients({
+        page: params.page,
+        limit: params.limit,
+        // ✅ No accountId - show all clients like original
+      }).unwrap();
+
+      return result;
+    },
+    [fetchClients]
+  );
+
+  // Use the new React Native-style infinite hook
   const {
     data: clients,
     loading,
     loadingMore,
     hasMore,
-    loadMore,
     total,
-  } = useMinimalInfinite<Client, Parameters<typeof useGetClientsQuery>[0]>(
-    useGetClientsQuery,
-    { accountId: selectedAccountId },
+    error,
+    loadMore,
+    optimisticDelete,
+  } = useMinimalInfinite<Client>(
+    fetchPage,
+    {}, // ✅ No filter by accountId - show all clients like original
     { pageSize: 20 }
   );
 
@@ -73,27 +92,49 @@ export default function ClientsTable() {
     }));
   }, [clients]);
 
-  // Show loading when account is not selected yet
-  if (selectedAccountId === null) {
-    return (
-      <div className="h-full flex flex-col gap-y-6">
-        <div className="flex-1 min-h-0 flex items-center justify-center">
-          <div className="text-muted-foreground">Cargando cuenta...</div>
-        </div>
-      </div>
-    );
-  }
+  // Create columns with optimistic functions
+  const columnsWithActions: ColumnDef<Client & { fullName: string }>[] =
+    useMemo(() => {
+      return columns.map((col) => {
+        if (col.id === "actions") {
+          return {
+            ...col,
+            cell: ({ row }) => {
+              const client = row.original;
+              return (
+                <ClientActions
+                  client={client}
+                  onOptimisticDelete={optimisticDelete}
+                />
+              );
+            },
+          };
+        }
+        return col;
+      });
+    }, [optimisticDelete]);
 
   return (
-    <SimpleInfiniteTable
-      columns={columns}
-      data={mappedClients}
-      loading={loading}
-      loadingMore={loadingMore}
-      hasMore={hasMore}
-      onLoadMore={loadMore}
-      total={total}
-      // onRowClick={(row) => router.push(`/clientes/${row.id}`)}
-    />
+    <div className="h-full flex flex-col gap-y-6">
+      {/* Table */}
+      <div className="flex-1 min-h-0">
+        <SimpleInfiniteTable
+          columns={columnsWithActions}
+          data={mappedClients}
+          loading={loading}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          total={total}
+          bottomLeftComponent={
+            <div className="flex items-center gap-4">
+              {error && (
+                <div className="text-red-500 text-sm">Error cargando datos</div>
+              )}
+            </div>
+          }
+        />
+      </div>
+    </div>
   );
 }

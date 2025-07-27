@@ -4,6 +4,7 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
+  RowSelectionState,
 } from "@tanstack/react-table";
 
 import { Loader2 } from "lucide-react";
@@ -28,6 +29,10 @@ interface SimpleInfiniteTableProps<TData, TValue> {
   total?: number;
   onRowClick?: (row: TData) => void;
   bottomLeftComponent?: ReactNode;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (
+    updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)
+  ) => void;
 }
 
 export default function SimpleInfiniteTable<TData, TValue>({
@@ -40,12 +45,19 @@ export default function SimpleInfiniteTable<TData, TValue>({
   total,
   onRowClick,
   bottomLeftComponent,
+  rowSelection = {},
+  onRowSelectionChange,
 }: SimpleInfiniteTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
+    enableRowSelection: true,
+    state: {
+      rowSelection,
+    },
+    onRowSelectionChange,
   });
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -91,7 +103,6 @@ export default function SimpleInfiniteTable<TData, TValue>({
     );
   }
 
-  // Direct table implementation with proper scroll handling
   return (
     <div className="h-full flex flex-col gap-4">
       <div className="flex-1 min-h-0 relative overflow-hidden rounded-md border">
@@ -141,14 +152,13 @@ export default function SimpleInfiniteTable<TData, TValue>({
                     {table.getRowModel().rows.map((row) => (
                       <TableRow
                         key={row.id}
-                        className={
-                          onRowClick ? "cursor-pointer hover:bg-muted" : ""
-                        }
                         data-state={row.getIsSelected() && "selected"}
+                        className={onRowClick ? "cursor-pointer" : ""}
                         onClick={() => onRowClick?.(row.original)}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell
+                            key={cell.id}
                             className={clsx(
                               (
                                 cell.column.columnDef.meta as {
@@ -156,7 +166,6 @@ export default function SimpleInfiniteTable<TData, TValue>({
                                 }
                               )?.className
                             )}
-                            key={cell.id}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,
@@ -188,7 +197,7 @@ export default function SimpleInfiniteTable<TData, TValue>({
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      No se encontraron resultados.
+                      No hay resultados.
                     </TableCell>
                   </TableRow>
                 )}
