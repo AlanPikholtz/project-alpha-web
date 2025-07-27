@@ -80,8 +80,8 @@ export default function ClientsTable() {
     optimisticDelete,
   } = useMinimalInfinite<Client>(
     fetchPage,
-    {}, // ✅ No filter by accountId - show all clients like original
-    { pageSize: 20 }
+    {}, // No filters for clients - show all
+    { pageSize: 40 } // Optimized for medium complexity
   );
 
   // Map clients to include fullName for display

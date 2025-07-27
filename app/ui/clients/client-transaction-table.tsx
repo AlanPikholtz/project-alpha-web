@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import _ from "lodash";
@@ -85,9 +84,6 @@ export default function ClientTransactionTable({
 }: {
   client?: Client;
 }) {
-  const { id } = useParams(); // Get the dynamic ID from the URL
-  const clientId = parseInt(id as string, 10);
-
   // Filters
   const [dateRange, setDateRange] = useState<DateRange>();
   const [sortBy, setSortBy] = useState<SortBy>(
@@ -130,14 +126,14 @@ export default function ClientTransactionTable({
   } = useMinimalInfinite<Operation>(
     fetchPage,
     {
-      clientId,
-      from: dateRange?.from?.toISOString(),
-      to: dateRange?.to?.toISOString(),
-      sort: sortBy,
-      ...(type !== "all" && { type }),
+      clientId: client?.id,
+      ...(dateRange?.from && { from: dateRange.from.toISOString() }),
+      ...(dateRange?.to && { to: dateRange.to.toISOString() }),
+      ...(type && { type }),
+      ...(sortBy && { sort: sortBy }),
     },
-    { pageSize: 20 }
-  );
+    { pageSize: 30 }
+  ); // Optimized for complex data & multiple filters
 
   const { exportToExcel } = useExcel();
 

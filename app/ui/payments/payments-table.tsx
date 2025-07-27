@@ -104,8 +104,8 @@ export default function PaymentsTable({
     {
       ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
     },
-    { pageSize: 20 }
-  );
+    { pageSize: 60 }
+  ); // Optimized for simple table structure
 
   // Create columns with optimistic delete
   const columnsWithActions: ColumnDef<Payment>[] = useMemo(() => {

@@ -30,6 +30,7 @@ export default function AssignClientModal({
   transactions,
   onSuccessAssign,
   onOptimisticUpdate,
+  onSmartBulkAssign,
 }: {
   transactions: Transaction[];
   onSuccessAssign: () => void;
@@ -37,6 +38,7 @@ export default function AssignClientModal({
     id: number | string,
     updater: (item: Transaction) => Transaction
   ) => void;
+  onSmartBulkAssign?: (transactionIds: (number | string)[]) => void;
 }) {
   const { selectedAccountId } = useAccountId();
 
@@ -55,8 +57,20 @@ export default function AssignClientModal({
       const selectedClient = clients?.data.find((c) => c.id === clientId);
       if (!selectedClient) return;
 
-      // If we have optimistic functions, use them
-      if (onOptimisticUpdate) {
+      // 1. Make the API call FIRST
+      await bulkUpdateTransactions({
+        clientId,
+        transactionIds: transactions.map((x) => x.id),
+      }).unwrap();
+
+      console.log("✅ Bulk assignment confirmed by backend");
+
+      // 2. If we have optimistic functions, use them AFTER success
+      if (onSmartBulkAssign) {
+        // Use smart bulk assign that considers current filter
+        console.log("🎯 Using smart bulk assign for filter-aware updates");
+        onSmartBulkAssign(transactions.map((t) => t.id));
+      } else if (onOptimisticUpdate) {
         console.log(
           "⚡ Optimistically assigning client",
           selectedClient.firstName,
@@ -65,8 +79,7 @@ export default function AssignClientModal({
           transactions.length,
           "transactions"
         );
-
-        // 1. Optimistic: update all selected transactions immediately
+        // Optimistic: update all selected transactions immediately
         transactions.forEach((transaction) => {
           onOptimisticUpdate(transaction.id, (currentTransaction) => ({
             ...currentTransaction,
@@ -74,36 +87,16 @@ export default function AssignClientModal({
             clientFullName: `${selectedClient.firstName} ${selectedClient.lastName}`,
           }));
         });
-
-        // 2. Make the API call and wait for response
-        await bulkUpdateTransactions({
-          clientId,
-          transactionIds: transactions.map((x) => x.id),
-        }).unwrap();
-
-        console.log("✅ Bulk assignment confirmed by backend");
-
-        // 3. Only close modal and deselect if API call was successful
-        onSuccessAssign();
-        setOpen(false);
-      } else {
-        // Fallback to original behavior if no optimistic functions
-        await bulkUpdateTransactions({
-          clientId,
-          transactionIds: transactions.map((x) => x.id),
-        }).unwrap();
-
-        // De-Select items
-        onSuccessAssign();
-        // Close modal
-        setOpen(false);
       }
+
+      // 3. Only close modal and deselect if API call was successful
+      onSuccessAssign();
+      setOpen(false);
     } catch (error) {
       console.error(
         "❌ Error in bulk assignment, keeping modal open to show error",
         error
       );
-
       // Don't close modal - let user see the error and try again
       // The modal will automatically show the error via {errorUpdating && <ApiErrorMessage error={errorUpdating} />}
     }

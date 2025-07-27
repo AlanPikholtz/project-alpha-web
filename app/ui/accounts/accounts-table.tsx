@@ -70,8 +70,8 @@ export default function AccountsTable({
     refresh,
   } = useMinimalInfinite<Account>(
     fetchPage,
-    {}, // No base args needed for accounts
-    { pageSize: 20 }
+    {}, // No filters for accounts - show all
+    { pageSize: 100 } // Optimized for simple structure & few total items
   );
 
   // Expose optimistic functions to parent component

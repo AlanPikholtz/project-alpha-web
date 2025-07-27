@@ -25,7 +25,8 @@ export default function UnassignTransactionsModal({
   setOpen: (open: boolean) => void;
   onOptimisticUpdate?: (
     id: number | string,
-    updater: (item: Transaction) => Transaction
+    updater: (item: Transaction) => Transaction,
+    isAssigning?: boolean
   ) => void;
 }) {
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -51,11 +52,15 @@ export default function UnassignTransactionsModal({
         );
 
         // Update UI after API success
-        onOptimisticUpdate(transaction.id, (currentTransaction) => ({
-          ...currentTransaction,
-          clientId: 0,
-          clientFullName: "",
-        }));
+        onOptimisticUpdate(
+          transaction.id,
+          (currentTransaction) => ({
+            ...currentTransaction,
+            clientId: 0, // Set to 0 (falsy) to indicate unassigned
+            clientFullName: "", // Set to empty string (falsy)
+          }),
+          false
+        ); // isAssigning = false
       }
 
       // Close modals and show success

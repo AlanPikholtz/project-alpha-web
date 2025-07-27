@@ -34,7 +34,7 @@ export function useMinimalInfinite<T>(
   baseArgs: Record<string, unknown> = {},
   options: MinimalInfiniteOptions = {}
 ): MinimalInfiniteReturn<T> {
-  const { pageSize = 20 } = options;
+  const { pageSize = 50 } = options;
 
   // State
   const [data, setData] = useState<T[]>([]);

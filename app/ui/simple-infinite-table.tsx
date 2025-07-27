@@ -69,7 +69,7 @@ export default function SimpleInfiniteTable<TData, TValue>({
     if (!container || !hasMore || loadingRef.current || loadingMore) return;
 
     const { scrollTop, scrollHeight, clientHeight } = container;
-    const threshold = 100; // Load when 100px from bottom
+    const threshold = 800; // Load when 800px from bottom
 
     if (scrollHeight - scrollTop - clientHeight < threshold) {
       loadingRef.current = true;

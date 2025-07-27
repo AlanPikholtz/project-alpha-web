@@ -79,7 +79,7 @@ const columns: ColumnDef<Transaction>[] = [
 ];
 
 export default function TransactionsTable() {
-  const { selectedAccountId } = useAccountId();
+  const { selectedAccountId, loadingAccounts } = useAccountId();
 
   // Filters
   const [amountFilter, setAmountFilter] = useState<string>("");
@@ -141,7 +141,6 @@ export default function TransactionsTable() {
     loadMore,
     optimisticUpdate,
     optimisticDelete,
-    refresh,
   } = useMinimalInfinite<Transaction>(
     fetchPage,
     {
@@ -152,7 +151,51 @@ export default function TransactionsTable() {
       to: dateRange?.to?.toISOString(),
       sort: "date",
     },
-    { pageSize: 20 }
+    { pageSize: 25 }
+  ); // Optimized for complex interactions & components
+
+  // Smart optimistic functions that consider current filter
+  const smartOptimisticUpdate = useCallback(
+    (
+      id: number | string,
+      updater: (item: Transaction) => Transaction,
+      isAssigning: boolean = true
+    ) => {
+      const transaction = transactions.find((t) => t.id === id);
+      if (!transaction) return;
+
+      if (statusFilter === "unassigned" && isAssigning) {
+        // Assigning client while filtering unassigned -> remove from view
+        console.log(
+          "🎯 Transaction assigned while filtering 'unassigned' - removing from view"
+        );
+        optimisticDelete(id);
+      } else if (statusFilter === "assigned" && !isAssigning) {
+        // Unassigning client while filtering assigned -> remove from view
+        console.log(
+          "🎯 Transaction unassigned while filtering 'assigned' - removing from view"
+        );
+        optimisticDelete(id);
+      } else {
+        // Normal update for other cases
+        optimisticUpdate(id, updater);
+      }
+    },
+    [statusFilter, optimisticUpdate, optimisticDelete, transactions]
+  );
+
+  // Smart bulk assign for mass operations
+  const smartBulkAssign = useCallback(
+    (transactionIds: (number | string)[]) => {
+      if (statusFilter === "unassigned") {
+        // When filtering by unassigned, remove all assigned transactions from view
+        console.log(
+          "🎯 Bulk assign while filtering 'unassigned' - removing assigned transactions from view"
+        );
+        transactionIds.forEach((id) => optimisticDelete(id));
+      }
+    },
+    [statusFilter, optimisticDelete]
   );
 
   const dynamicColumns = useMemo(() => {
@@ -164,15 +207,15 @@ export default function TransactionsTable() {
         return (
           <AssignClientDropdown
             transaction={row.original}
-            onOptimisticUpdate={optimisticUpdate}
+            onOptimisticUpdate={smartOptimisticUpdate}
             onOptimisticDelete={optimisticDelete}
-            onError={refresh}
+            statusFilter={statusFilter}
           />
         );
       },
     });
     return dynamicCols;
-  }, [optimisticUpdate, optimisticDelete, refresh]);
+  }, [smartOptimisticUpdate, optimisticDelete, statusFilter]);
 
   // Get selected transactions
   const selectedTransactions = useMemo(() => {
@@ -190,17 +233,6 @@ export default function TransactionsTable() {
     setRowSelection({});
     // No refresh needed - optimistic updates already handled the data changes
   }, []);
-
-  // Show loading when account is not selected yet
-  if (selectedAccountId === null) {
-    return (
-      <div className="h-full flex flex-col gap-y-6">
-        <div className="flex-1 min-h-0 flex items-center justify-center">
-          <div className="text-muted-foreground">Cargando cuenta...</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col gap-y-6">
@@ -221,7 +253,7 @@ export default function TransactionsTable() {
         <SimpleInfiniteTable
           columns={dynamicColumns}
           data={transactions}
-          loading={loading}
+          loading={loadingAccounts || loading}
           loadingMore={loadingMore}
           hasMore={hasMore}
           onLoadMore={loadMore}
@@ -235,6 +267,7 @@ export default function TransactionsTable() {
                   transactions={selectedTransactions}
                   onSuccessAssign={handleSuccessAssign}
                   onOptimisticUpdate={optimisticUpdate}
+                  onSmartBulkAssign={smartBulkAssign}
                 />
               )}
               {selectedTransactions.length > 0 &&
