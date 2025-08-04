@@ -1,28 +1,28 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table";
 import _ from "lodash";
+import { Download } from "lucide-react";
+import { useCallback, useState } from "react";
 
-import SimpleInfiniteTable from "../simple-infinite-table";
 import {
-  useMinimalInfinite,
   FetchPageFn,
+  useMinimalInfinite,
 } from "@/app/hooks/use-minimal-infinite";
-import { useLazyGetClientOperationsQuery } from "@/app/lib/clients/api";
-import { Operation, Client } from "@/app/lib/clients/types";
-import { formatDate, formatNumber } from "@/app/lib/helpers";
 import useExcel from "@/app/hooks/useExcel";
+import { useLazyGetClientOperationsQuery } from "@/app/lib/clients/api";
+import { Client, Operation } from "@/app/lib/clients/types";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
+import { paymentMethodToString } from "@/app/lib/payments/helpers";
+import { sortByOptions } from "@/app/lib/transactions/data";
+import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 import { SortBy, TransactionType } from "@/app/lib/transactions/types";
 import { DateRange } from "react-day-picker";
+import SimpleInfiniteTable from "../simple-infinite-table";
 import DateRangeFilter from "../transactions/filters/date-range-filter";
 import SortByFilter from "../transactions/filters/sort-by-filter";
 import TypeFilter from "../transactions/filters/type-filter";
-import { sortByOptions } from "@/app/lib/transactions/data";
-import { paymentMethodToString } from "@/app/lib/payments/helpers";
-import { transactionTypeToString } from "@/app/lib/transactions/helpers";
 
 const columns: ColumnDef<Operation>[] = [
   {
@@ -79,17 +79,14 @@ const columns: ColumnDef<Operation>[] = [
   },
 ];
 
-export default function ClientTransactionTable({
-  client,
-}: {
-  client?: Client;
-}) {
+export default function ClientTransactionTable({ client }: { client: Client }) {
   // Filters
   const [dateRange, setDateRange] = useState<DateRange>();
   const [sortBy, setSortBy] = useState<SortBy>(
     sortByOptions[0].value as SortBy
   );
   const [type, setType] = useState<"transactions" | "payments" | "all">("all");
+  const [exportingOperations, setExportOperations] = useState(false);
 
   // Create lazy query trigger
   const [fetchOperations] = useLazyGetClientOperationsQuery();
@@ -126,7 +123,7 @@ export default function ClientTransactionTable({
   } = useMinimalInfinite<Operation>(
     fetchPage,
     {
-      clientId: client?.id,
+      clientId: client.id,
       ...(dateRange?.from && { from: dateRange.from.toISOString() }),
       ...(dateRange?.to && { to: dateRange.to.toISOString() }),
       ...(type && { type }),
@@ -137,42 +134,64 @@ export default function ClientTransactionTable({
 
   const { exportToExcel } = useExcel();
 
-  const handleDownload = () => {
-    if (!operations || operations.length === 0 || !client) return;
+  const handleDownload = async () => {
+    try {
+      setExportOperations(true);
 
-    const exportData = operations.map((op, i) => ({
-      "Fecha/Hora": formatDate(op.date),
-      "Fecha/Hora Asignación": formatDate(op.assignedAt),
-      Tipo: _.capitalize(transactionTypeToString(op.type as TransactionType)),
-      Monto: parseFloat(op.amount),
-      Método: op.method ? _.capitalize(paymentMethodToString(op.method)) : "",
-      "A Cliente": _.isNaN(parseFloat(op.clientAmount))
-        ? "-"
-        : parseFloat(op.clientAmount),
-      "Saldo Actual": i === operations.length - 1 ? +client.balance : "",
-    }));
+      const { data: operationsWithoutLimit } = await fetchOperations({
+        clientId: client.id,
+        from: dateRange?.from?.toISOString(),
+        to: dateRange?.to?.toISOString(),
+        sort: sortBy,
+        type: type,
+        limit: 0,
+      }).unwrap();
 
-    // Use client name for personalized filename
-    const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
+      if (
+        !operationsWithoutLimit ||
+        operationsWithoutLimit.length === 0 ||
+        !client
+      )
+        return;
 
-    exportToExcel(
-      [
-        {
-          name: "Transacciones",
-          data: exportData,
-          columns: [
-            { wch: 25 }, // "Fecha/Hora"
-            { wch: 25 }, // "Fecha/Hora Asignación"
-            { wch: 20 }, // Tipo
-            { wch: 15 }, // Monto
-            { wch: 15 }, // Método
-            { wch: 15 }, // A Cliente
-            { wch: 15 }, // Saldo Actual
-          ],
-        },
-      ],
-      excelName
-    );
+      const exportData = operationsWithoutLimit.map((op, i) => ({
+        "Fecha/Hora": formatDate(op.date),
+        "Fecha/Hora Asignación": formatDate(op.assignedAt),
+        Tipo: _.capitalize(transactionTypeToString(op.type as TransactionType)),
+        Monto: parseFloat(op.amount),
+        Método: op.method ? _.capitalize(paymentMethodToString(op.method)) : "",
+        "A Cliente": _.isNaN(parseFloat(op.clientAmount))
+          ? "-"
+          : parseFloat(op.clientAmount),
+        "Saldo Actual":
+          i === operationsWithoutLimit.length - 1 ? +client.balance : "",
+      }));
+
+      // Use client name for personalized filename
+      const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
+
+      exportToExcel(
+        [
+          {
+            name: "Transacciones",
+            data: exportData,
+            columns: [
+              { wch: 25 }, // "Fecha/Hora"
+              { wch: 25 }, // "Fecha/Hora Asignación"
+              { wch: 20 }, // Tipo
+              { wch: 15 }, // Monto
+              { wch: 15 }, // Método
+              { wch: 15 }, // A Cliente
+              { wch: 15 }, // Saldo Actual
+            ],
+          },
+        ],
+        excelName
+      );
+    } catch (error) {
+    } finally {
+      setExportOperations(false);
+    }
   };
 
   return (
@@ -203,6 +222,7 @@ export default function ClientTransactionTable({
                 size="sm"
                 onClick={handleDownload}
                 disabled={operations.length === 0}
+                loading={exportingOperations}
               >
                 <Download className="h-4 w-4 mr-2" />
                 Descargar Excel
