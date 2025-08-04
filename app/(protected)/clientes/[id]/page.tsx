@@ -1,22 +1,25 @@
 "use client";
 
-import React from "react";
-import { useParams } from "next/navigation";
 import { useGetClientByIdQuery } from "@/app/lib/clients/api";
-import { Separator } from "@/components/ui/separator";
-import ClientTransactionTable from "@/app/ui/clients/client-transaction-table";
 import BackButton from "@/app/ui/back-button";
-import { EditIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import ClientCurrentBalance from "@/app/ui/clients/client-current-balance";
+import ClientTransactionTable from "@/app/ui/clients/client-transaction-table";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EditIcon } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 
 export default function ClientPage() {
   const { id } = useParams(); // Get the dynamic ID from the URL
   const router = useRouter();
 
-  const { data: client } = useGetClientByIdQuery({
+  const { data: client, isLoading } = useGetClientByIdQuery({
     id: id as unknown as number,
   });
+
+  if (isLoading || !client) {
+    return <Skeleton className="w-full h-full" />;
+  }
 
   return (
     <div className="h-full flex flex-col gap-y-5 overflow-hidden">
