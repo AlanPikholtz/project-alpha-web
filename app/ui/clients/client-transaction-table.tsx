@@ -189,6 +189,7 @@ export default function ClientTransactionTable({ client }: { client: Client }) {
         excelName
       );
     } catch (error) {
+      console.error("Error exporting operations:", error);
     } finally {
       setExportOperations(false);
     }
