@@ -74,17 +74,15 @@ export default function DuplicatedTransactionsModal({
 
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-4xl max-h-[80vh]">
         <AlertDialogHeader>
           <AlertDialogTitle>Transacciones duplicadas!</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         {/* Table */}
-        <CustomTable
-          tableBodyClassName="max-h-100"
-          columns={columns}
-          table={table}
-        />
+        <div className="flex-1 min-h-0 h-[400px]">
+          <CustomTable columns={columns} table={table} />
+        </div>
         <AlertDialogFooter>
           <AlertDialogAction>Cerrar</AlertDialogAction>
         </AlertDialogFooter>

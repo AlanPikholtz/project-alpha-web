@@ -128,6 +128,7 @@ export const clientsApi = api.injectEndpoints({
 export const {
   // Clients
   useGetClientsQuery,
+  useLazyGetClientsQuery,
   // Client
   useGetClientByIdQuery,
   useLazyGetClientByIdQuery,
@@ -139,6 +140,7 @@ export const {
   useUpdateClientBalanceMutation,
   // Operations
   useGetClientOperationsQuery,
+  useLazyGetClientOperationsQuery,
   // Delete client
   useDeleteClientMutation,
 } = clientsApi;

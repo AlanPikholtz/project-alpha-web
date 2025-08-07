@@ -30,7 +30,20 @@ const formSchema = z.object({
   name: z.string().nonempty("Ingrese el nombre de la cuenta"),
 });
 
-export default function UpdateAccountDialog({ account }: { account: Account }) {
+interface UpdateAccountDialogProps {
+  account: Account;
+  onOptimisticUpdate?: (
+    id: number | string,
+    updater: (item: Account) => Account
+  ) => void;
+  onError?: () => Promise<void>;
+}
+
+export default function UpdateAccountDialog({
+  account,
+  onOptimisticUpdate,
+  onError,
+}: UpdateAccountDialogProps) {
   const [open, setOpen] = useState(false);
 
   const [updateAccount, { isLoading: loading }] = useUpdateAccountMutation();
@@ -48,16 +61,49 @@ export default function UpdateAccountDialog({ account }: { account: Account }) {
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      await updateAccount({
-        id: account.id,
-        ...data,
-      }).unwrap();
-      // Closes modal
-      setOpen(false);
-      // Toast
-      toast.success("La cuenta ha sido actualizada.");
+      // If we have optimistic functions, use them
+      if (onOptimisticUpdate) {
+        // 1. Optimistic: update immediately in the list
+        console.log(
+          "⚡ Optimistically updating account",
+          account.id,
+          "name to",
+          data.name
+        );
+        onOptimisticUpdate(account.id, (currentAccount) => ({
+          ...currentAccount,
+          name: data.name,
+        }));
+
+        // 2. Close dialog immediately for better UX
+        setOpen(false);
+        toast.success("La cuenta ha sido actualizada.");
+
+        // 3. Then make the real API call
+        await updateAccount({
+          id: account.id,
+          ...data,
+        }).unwrap();
+        console.log("✅ Account update confirmed by backend");
+      } else {
+        // Fallback to original behavior if no optimistic functions
+        await updateAccount({
+          id: account.id,
+          ...data,
+        }).unwrap();
+        setOpen(false);
+        toast.success("La cuenta ha sido actualizada.");
+      }
     } catch (error) {
-      console.log(error);
+      console.error(
+        "❌ Error updating account, reverting optimistic update",
+        error
+      );
+
+      // If it fails and we have error handler, refresh the list to revert
+      if (onError) {
+        await onError();
+      }
     }
   };
 

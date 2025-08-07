@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  ColumnDef,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import React, { useCallback, useMemo, useEffect } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 
-import CustomTable from "../custom-table";
-import { useGetAccountsQuery } from "@/app/lib/accounts/api";
+import SimpleInfiniteTable from "../simple-infinite-table";
+import {
+  useMinimalInfinite,
+  FetchPageFn,
+} from "@/app/hooks/use-minimal-infinite";
+import { useLazyGetAccountsQuery } from "@/app/lib/accounts/api";
 import { Account } from "@/app/lib/accounts/types";
 import AccountActions from "./account-actions";
 
@@ -30,51 +29,101 @@ const columns: ColumnDef<Account>[] = [
   },
 ];
 
-export default function AccountsTable() {
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
+interface AccountsTableProps {
+  onOptimisticFunctionsReady?: (functions: {
+    optimisticAdd: (item: Account) => void;
+    refresh: () => Promise<void>;
+  }) => void;
+}
 
+export default function AccountsTable({
+  onOptimisticFunctionsReady,
+}: AccountsTableProps) {
+  // Create lazy query trigger
+  const [fetchAccounts] = useLazyGetAccountsQuery();
+
+  // Create fetchPage function
+  const fetchPage: FetchPageFn<Account> = useCallback(
+    async (params) => {
+      const result = await fetchAccounts({
+        page: params.page,
+        limit: params.limit,
+      }).unwrap();
+
+      return result;
+    },
+    [fetchAccounts]
+  );
+
+  // Use the new React Native-style infinite hook
   const {
     data: accounts,
-    isLoading: loadingAccounts,
-    isFetching: fetchingAccounts,
-  } = useGetAccountsQuery({
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-  });
+    loading,
+    loadingMore,
+    hasMore,
+    total,
+    error,
+    loadMore,
+    optimisticUpdate,
+    optimisticDelete,
+    optimisticAdd,
+    refresh,
+  } = useMinimalInfinite<Account>(
+    fetchPage,
+    {}, // No filters for accounts - show all
+    { pageSize: 100 } // Optimized for simple structure & few total items
+  );
 
-  const table = useReactTable({
-    data: accounts?.data || [],
-    columns,
-    pageCount: accounts?.pages,
-    state: {
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
+  // Expose optimistic functions to parent component
+  useEffect(() => {
+    if (onOptimisticFunctionsReady) {
+      onOptimisticFunctionsReady({
+        optimisticAdd,
+        refresh,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onOptimisticFunctionsReady]); // Only depend on the callback
+
+  // Create columns with optimistic functions
+  const columnsWithActions: ColumnDef<Account>[] = useMemo(() => {
+    return columns.map((col) => {
+      if (col.id === "actions") {
+        return {
+          ...col,
+          cell: ({ row }) => {
+            const account = row.original;
+            return (
+              <AccountActions
+                account={account}
+                onOptimisticUpdate={optimisticUpdate}
+                onOptimisticDelete={optimisticDelete}
+                onError={refresh}
+              />
+            );
+          },
+        };
+      }
+      return col;
+    });
+  }, [optimisticUpdate, optimisticDelete, refresh]);
 
   return (
-    <CustomTable
-      columns={columns}
-      table={table}
-      withPagination
-      loading={loadingAccounts}
-      fetching={fetchingAccounts}
+    <SimpleInfiniteTable
+      columns={columnsWithActions}
+      data={accounts}
+      loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
+      total={total}
+      bottomLeftComponent={
+        <div className="flex items-center gap-4">
+          {error && (
+            <div className="text-red-500 text-sm">Error cargando datos</div>
+          )}
+        </div>
+      }
     />
   );
 }

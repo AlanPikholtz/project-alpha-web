@@ -18,8 +18,8 @@ export default function PaymentsPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-y-6.5">
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col gap-y-6 overflow-hidden">
+      <div className="flex items-center justify-between flex-shrink-0">
         <Button
           className="self-start"
           onClick={() => router.push("/pagos/nuevo")}
@@ -36,7 +36,9 @@ export default function PaymentsPage() {
           onChange={(e) => setAmountFilter(e.target.value)}
         />
       </div>
-      <PaymentsTable amountFilter={amountFilter} />
+      <div className="flex-1 min-h-0">
+        <PaymentsTable amountFilter={amountFilter} />
+      </div>
     </div>
   );
 }
