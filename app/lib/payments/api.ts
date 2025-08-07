@@ -47,6 +47,7 @@ export const paymentsApi = api
 
 export const {
   useGetPaymentsQuery,
+  useLazyGetPaymentsQuery,
   useCreatePaymentMutation,
   useDeletePaymentMutation,
 } = paymentsApi;

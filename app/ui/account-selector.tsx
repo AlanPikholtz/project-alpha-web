@@ -21,25 +21,18 @@ import { cn } from "../lib/utils";
 import { useAccountId } from "../context/account-provider";
 
 export default function AccountSelector({
-  disable,
   value,
+  disable = false,
   onSelect,
 }: {
+  value?: number;
   disable?: boolean;
-  value?: number; // valor controlado
   onSelect?: (id: number) => void;
 }) {
   const { accounts, loadingAccounts, selectedAccountId, setSelectedAccountId } =
     useAccountId();
 
   const [open, setOpen] = React.useState(false);
-
-  // If we're uncontrolled (context), set first account by default
-  React.useEffect(() => {
-    if (onSelect) return; // Skip if controlled
-    if (selectedAccountId || accounts.length === 0) return;
-    setSelectedAccountId(accounts[0].id);
-  }, [accounts, selectedAccountId, setSelectedAccountId, onSelect]);
 
   // Determine which ID to use
   const currentValue = onSelect ? value : selectedAccountId;

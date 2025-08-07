@@ -122,6 +122,7 @@ export const transactionsApi = api
 
 export const {
   useGetTransactionsQuery,
+  useLazyGetTransactionsQuery,
   // Create
   useCreateTransactionMutation,
   useCreateBulkTransactionMutation,

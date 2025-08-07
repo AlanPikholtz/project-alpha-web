@@ -11,8 +11,8 @@ export const metadata = {
 
 export default function TransactionsPage() {
   return (
-    <div>
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col gap-y-6 overflow-hidden">
+      <div className="flex items-center justify-between flex-shrink-0">
         {/* Dropdown */}
         <AccountSelector />
         {/* New transaccions */}
@@ -26,7 +26,9 @@ export default function TransactionsPage() {
           </Link>
         </Button>
       </div>
-      <TransactionsTable />
+      <div className="flex-1 min-h-0">
+        <TransactionsTable />
+      </div>
     </div>
   );
 }

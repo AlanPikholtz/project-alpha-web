@@ -113,9 +113,9 @@ export default function NewTransactionsTable({
   };
 
   return (
-    <div className="flex flex-col gap-y-6.5">
+    <div className="h-full flex flex-col gap-y-6">
       {/* Filters */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-shrink-0">
         <div className="flex gap-10 items-center">
           <AccountSelector disable />
           <Input
@@ -135,7 +135,9 @@ export default function NewTransactionsTable({
         </Button>
       </div>
       {/* Table */}
-      <CustomTable columns={columns} table={table} />
+      <div className="flex-1 min-h-0">
+        <CustomTable columns={columns} table={table} />
+      </div>
       <DuplicatedTransactionsModal
         open={showModal}
         transactions={duplicatedTransactions}
