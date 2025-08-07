@@ -184,20 +184,6 @@ export default function TransactionsTable() {
     [statusFilter, optimisticUpdate, optimisticDelete, transactions]
   );
 
-  // Smart bulk assign for mass operations
-  const smartBulkAssign = useCallback(
-    (transactionIds: (number | string)[]) => {
-      if (statusFilter === "unassigned") {
-        // When filtering by unassigned, remove all assigned transactions from view
-        console.log(
-          "🎯 Bulk assign while filtering 'unassigned' - removing assigned transactions from view"
-        );
-        transactionIds.forEach((id) => optimisticDelete(id));
-      }
-    },
-    [statusFilter, optimisticDelete]
-  );
-
   const dynamicColumns = useMemo(() => {
     const dynamicCols = [...columns];
     dynamicCols.push({
@@ -266,8 +252,7 @@ export default function TransactionsTable() {
                 <AssignClientModal
                   transactions={selectedTransactions}
                   onSuccessAssign={handleSuccessAssign}
-                  onOptimisticUpdate={optimisticUpdate}
-                  onSmartBulkAssign={smartBulkAssign}
+                  onOptimisticUpdate={smartOptimisticUpdate}
                 />
               )}
               {selectedTransactions.length > 0 &&

@@ -30,7 +30,6 @@ export default function AssignClientModal({
   transactions,
   onSuccessAssign,
   onOptimisticUpdate,
-  onSmartBulkAssign,
 }: {
   transactions: Transaction[];
   onSuccessAssign: () => void;
@@ -38,7 +37,6 @@ export default function AssignClientModal({
     id: number | string,
     updater: (item: Transaction) => Transaction
   ) => void;
-  onSmartBulkAssign?: (transactionIds: (number | string)[]) => void;
 }) {
   const { selectedAccountId } = useAccountId();
 
@@ -65,12 +63,8 @@ export default function AssignClientModal({
 
       console.log("✅ Bulk assignment confirmed by backend");
 
-      // 2. If we have optimistic functions, use them AFTER success
-      if (onSmartBulkAssign) {
-        // Use smart bulk assign that considers current filter
-        console.log("🎯 Using smart bulk assign for filter-aware updates");
-        onSmartBulkAssign(transactions.map((t) => t.id));
-      } else if (onOptimisticUpdate) {
+      // 2. Update optimistically after successful API call
+      if (onOptimisticUpdate) {
         console.log(
           "⚡ Optimistically assigning client",
           selectedClient.firstName,
@@ -79,7 +73,6 @@ export default function AssignClientModal({
           transactions.length,
           "transactions"
         );
-        // Optimistic: update all selected transactions immediately
         transactions.forEach((transaction) => {
           onOptimisticUpdate(transaction.id, (currentTransaction) => ({
             ...currentTransaction,
