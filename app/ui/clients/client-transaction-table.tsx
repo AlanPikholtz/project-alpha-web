@@ -1,26 +1,27 @@
-import { SortBy } from "@/app/lib/transactions/types";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import React, { useEffect, useState } from "react";
-import { DateRange } from "react-day-picker";
-import DateRangeFilter from "../transactions/filters/date-range-filter";
-import CustomTable from "../custom-table";
-import { useParams } from "next/navigation";
-import useExcel from "@/app/hooks/useExcel";
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { transactionTypeToString } from "@/app/lib/transactions/helpers";
+import { ColumnDef } from "@tanstack/react-table";
 import _ from "lodash";
-import SortByFilter from "../transactions/filters/sort-by-filter";
-import { sortByOptions } from "@/app/lib/transactions/data";
-import { formatDate, formatNumber } from "@/app/lib/helpers";
+import { Download } from "lucide-react";
+import { useCallback, useState } from "react";
+
+import {
+  FetchPageFn,
+  useMinimalInfinite,
+} from "@/app/hooks/use-minimal-infinite";
+import useExcel from "@/app/hooks/useExcel";
+import { useLazyGetClientOperationsQuery } from "@/app/lib/clients/api";
 import { Client, Operation } from "@/app/lib/clients/types";
-import { useGetClientOperationsQuery } from "@/app/lib/clients/api";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
 import { paymentMethodToString } from "@/app/lib/payments/helpers";
+import { sortByOptions } from "@/app/lib/transactions/data";
+import { transactionTypeToString } from "@/app/lib/transactions/helpers";
+import { SortBy, TransactionType } from "@/app/lib/transactions/types";
+import { DateRange } from "react-day-picker";
+import SimpleInfiniteTable from "../simple-infinite-table";
+import DateRangeFilter from "../transactions/filters/date-range-filter";
+import SortByFilter from "../transactions/filters/sort-by-filter";
 import TypeFilter from "../transactions/filters/type-filter";
 
 const columns: ColumnDef<Operation>[] = [
@@ -36,9 +37,7 @@ const columns: ColumnDef<Operation>[] = [
     accessorKey: "assignedAt",
     header: "Fecha/Hora Asignación",
     cell: ({ row }) => {
-      const formatted = new Date(row.getValue("assignedAt")).toLocaleString(
-        "es-AR"
-      );
+      const formatted = formatDate(row.getValue("assignedAt"));
       return formatted;
     },
   },
@@ -46,7 +45,8 @@ const columns: ColumnDef<Operation>[] = [
     accessorKey: "type",
     header: "Tipo",
     cell: ({ row }) => {
-      return _.capitalize(transactionTypeToString(row.getValue("type")));
+      const type = row.getValue("type") as TransactionType;
+      return _.capitalize(transactionTypeToString(type));
     },
   },
   {
@@ -72,148 +72,169 @@ const columns: ColumnDef<Operation>[] = [
     header: "A Cliente",
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("clientAmount"));
-      if (_.isNaN(amount)) return "-";
-      return formatNumber(amount, { style: "currency", currency: "ARS" });
+      return _.isNaN(amount)
+        ? "-"
+        : formatNumber(amount, { style: "currency", currency: "ARS" });
     },
   },
 ];
 
-export default function ClientTransactionTable({
-  client,
-}: {
-  client?: Client;
-}) {
-  const { id } = useParams(); // Get the dynamic ID from the URL
+export default function ClientTransactionTable({ client }: { client: Client }) {
+  // Filters
+  const [dateRange, setDateRange] = useState<DateRange>();
+  const [sortBy, setSortBy] = useState<SortBy>(
+    sortByOptions[0].value as SortBy
+  );
+  const [type, setType] = useState<"transactions" | "payments" | "all">("all");
+  const [exportingOperations, setExportOperations] = useState(false);
+
+  // Create lazy query trigger
+  const [fetchOperations] = useLazyGetClientOperationsQuery();
+
+  // Create fetchPage function
+  const fetchPage: FetchPageFn<Operation> = useCallback(
+    async (params) => {
+      const result = await fetchOperations({
+        clientId: params.clientId as number,
+        page: params.page,
+        limit: params.limit,
+        from: params.from as string,
+        to: params.to as string,
+        sort: params.sort as SortBy,
+        ...(params.type && params.type !== "all"
+          ? { type: params.type as "transactions" | "payments" }
+          : {}),
+      }).unwrap();
+
+      return result;
+    },
+    [fetchOperations]
+  );
+
+  // Use the new React Native-style infinite hook
+  const {
+    data: operations,
+    loading,
+    loadingMore,
+    hasMore,
+    total,
+    error,
+    loadMore,
+  } = useMinimalInfinite<Operation>(
+    fetchPage,
+    {
+      clientId: client.id,
+      ...(dateRange?.from && { from: dateRange.from.toISOString() }),
+      ...(dateRange?.to && { to: dateRange.to.toISOString() }),
+      ...(type && { type }),
+      ...(sortBy && { sort: sortBy }),
+    },
+    { pageSize: 30 }
+  ); // Optimized for complex data & multiple filters
 
   const { exportToExcel } = useExcel();
 
-  // Filters
-  const [sortByFilter, setSortByFilter] = useState<SortBy | undefined>(
-    sortByOptions[0].value as SortBy | undefined
-  );
-  const [typeFilter, setTypeFilter] = useState<
-    "transactions" | "payments" | "all"
-  >("all");
-  const [dateRange, setDateRange] = useState<DateRange>();
+  const handleDownload = async () => {
+    try {
+      setExportOperations(true);
 
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
+      const { data: operationsWithoutLimit } = await fetchOperations({
+        clientId: client.id,
+        from: dateRange?.from?.toISOString(),
+        to: dateRange?.to?.toISOString(),
+        sort: sortBy,
+        type: type,
+        limit: 0,
+      }).unwrap();
 
-  const {
-    data: operations,
-    isLoading: loadingOperations,
-    isFetching: fetchingOperations,
-  } = useGetClientOperationsQuery({
-    clientId: id as unknown as number,
-    type: typeFilter,
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-    from: dateRange?.from?.toISOString(),
-    to: dateRange?.to?.toISOString(),
-    sort: sortByFilter,
-  });
+      if (
+        !operationsWithoutLimit ||
+        operationsWithoutLimit.length === 0 ||
+        !client
+      )
+        return;
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+      const exportData = operationsWithoutLimit.map((op, i) => ({
+        "Fecha/Hora": formatDate(op.date),
+        "Fecha/Hora Asignación": formatDate(op.assignedAt),
+        Tipo: _.capitalize(transactionTypeToString(op.type as TransactionType)),
+        Monto: parseFloat(op.amount),
+        Método: op.method ? _.capitalize(paymentMethodToString(op.method)) : "",
+        "A Cliente": _.isNaN(parseFloat(op.clientAmount))
+          ? "-"
+          : parseFloat(op.clientAmount),
+        "Saldo Actual":
+          i === operationsWithoutLimit.length - 1 ? +client.balance : "",
+      }));
 
-  const table = useReactTable({
-    data: operations?.data || [],
-    columns,
-    pageCount: operations?.pages,
-    state: {
-      columnFilters,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
+      // Use client name for personalized filename
+      const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
 
-  const handleExcelExport = () => {
-    if (!operations || operations.data.length === 0 || !client) return;
-
-    const exportData = operations.data.map((t, i) => ({
-      "Fecha/Hora": formatDate(t.date),
-      "Fecha/Hora Asignación": formatDate(t.assignedAt),
-      Tipo: transactionTypeToString(t.type),
-      Monto: _.isNaN(parseFloat(t.amount)) ? "-" : parseFloat(t.amount),
-      Método: t.method ? _.capitalize(paymentMethodToString(t.method)) : "",
-      "A Cliente": _.isNaN(parseFloat(t.clientAmount))
-        ? "-"
-        : parseFloat(t.clientAmount),
-      "Saldo Actual": i === operations.data.length - 1 ? +client.balance : "",
-    }));
-
-    const excelName = `Transacciones - ${client.firstName} ${client.lastName}`;
-    exportToExcel(
-      [
-        {
-          name: "Transacciones",
-          data: exportData,
-          columns: [
-            { wch: 25 }, // "Fecha/Hora"
-            { wch: 25 }, // "Fecha/Hora Asignación"
-            { wch: 20 }, // Tipo
-            { wch: 15 }, // Monto
-            { wch: 15 }, // Método
-            { wch: 15 }, // A Cliente
-          ],
-        },
-      ],
-      excelName
-    );
+      exportToExcel(
+        [
+          {
+            name: "Transacciones",
+            data: exportData,
+            columns: [
+              { wch: 25 }, // "Fecha/Hora"
+              { wch: 25 }, // "Fecha/Hora Asignación"
+              { wch: 20 }, // Tipo
+              { wch: 15 }, // Monto
+              { wch: 15 }, // Método
+              { wch: 15 }, // A Cliente
+              { wch: 15 }, // Saldo Actual
+            ],
+          },
+        ],
+        excelName
+      );
+    } catch (error) {
+      console.error("Error exporting operations:", error);
+    } finally {
+      setExportOperations(false);
+    }
   };
 
-  // Reset page on filters change
-  useEffect(() => {
-    setPageIndex(0);
-  }, [sortByFilter, dateRange]);
-
   return (
-    <div className="flex flex-col gap-y-6.5">
+    <div className="h-full flex flex-col gap-y-6">
       {/* Filters */}
-      <div className="flex gap-4 justify-between items-center py-4">
+      <div className="flex gap-4 justify-between items-center py-4 flex-shrink-0">
         <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
         <div className="flex items-center gap-4">
-          <TypeFilter type={typeFilter} setType={setTypeFilter} />
-          <SortByFilter
-            sortByFilter={sortByFilter}
-            setSortByFilter={setSortByFilter}
-          />
+          <TypeFilter type={type} setType={setType} />
+          <SortByFilter sortByFilter={sortBy} setSortByFilter={setSortBy} />
         </div>
       </div>
+
       {/* Table */}
-      <CustomTable
-        columns={columns}
-        table={table}
-        loading={loadingOperations}
-        fetching={fetchingOperations}
-        withPagination
-        bottomLeftComponent={
-          <Button
-            className="self-start"
-            disabled={operations && operations?.data.length === 0}
-            onClick={handleExcelExport}
-          >
-            Exportar
-          </Button>
-        }
-      />
+      <div className="flex-1 min-h-0">
+        <SimpleInfiniteTable
+          columns={columns}
+          data={operations}
+          loading={loading}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          total={total}
+          bottomLeftComponent={
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownload}
+                disabled={operations.length === 0}
+                loading={exportingOperations}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Descargar Excel
+              </Button>
+              {error && (
+                <div className="text-red-500 text-sm">Error cargando datos</div>
+              )}
+            </div>
+          }
+        />
+      </div>
     </div>
   );
 }

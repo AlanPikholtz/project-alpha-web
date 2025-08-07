@@ -1,24 +1,42 @@
 "use client";
 
+import React, { useMemo, useCallback } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+
+import SimpleInfiniteTable from "../simple-infinite-table";
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-
-import React, { useMemo, useState } from "react";
-
-import CustomTable from "../custom-table";
+  useMinimalInfinite,
+  FetchPageFn,
+} from "@/app/hooks/use-minimal-infinite";
+import { useLazyGetClientsQuery } from "@/app/lib/clients/api";
 import { Client } from "@/app/lib/clients/types";
-import { useGetClientsQuery } from "@/app/lib/clients/api";
 import ClientActions from "./client-actions";
+import { formatNumber } from "@/app/lib/helpers";
 
-const columns: ColumnDef<Client>[] = [
+const columns: ColumnDef<Client & { fullName: string }>[] = [
+  {
+    accessorKey: "code",
+    header: "Código",
+  },
   {
     accessorKey: "fullName",
-    header: "Cliente",
+    header: "Nombre Completo",
+  },
+  {
+    accessorKey: "balance",
+    header: "Balance",
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("balance"));
+      return formatNumber(amount, { style: "currency", currency: "ARS" });
+    },
+  },
+  {
+    accessorKey: "commission",
+    header: "Comisión",
+    cell: ({ row }) => {
+      const commission = parseFloat(row.getValue("commission"));
+      return `${commission}%`;
+    },
   },
   {
     id: "actions",
@@ -32,70 +50,91 @@ const columns: ColumnDef<Client>[] = [
   },
 ];
 
-// A table used to display all clients on a table with actions like update/delete?
 export default function ClientsTable() {
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
+  // Create lazy query trigger
+  const [fetchClients] = useLazyGetClientsQuery();
 
-  const {
-    data: clients,
-    isLoading: loading,
-    isFetching: fetchingClients,
-  } = useGetClientsQuery({
-    // accountId: selectedAccountId,
-    page: pageIndex + 1, // Current page
-    limit: pageSize, // Amount of pages
-  });
+  // Create fetchPage function
+  const fetchPage: FetchPageFn<Client> = useCallback(
+    async (params) => {
+      const result = await fetchClients({
+        page: params.page,
+        limit: params.limit,
+        // ✅ No accountId - show all clients like original
+      }).unwrap();
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+      return result;
+    },
+    [fetchClients]
   );
 
-  // Lets map clients for now to get the full name, this could be asked to BE
-  const mappedClients = useMemo(() => {
-    return clients?.data.map((x) => {
-      return { ...x, fullName: `${x.firstName} ${x.lastName}` };
-    });
-  }, [clients?.data]);
+  // Use the new React Native-style infinite hook
+  const {
+    data: clients,
+    loading,
+    loadingMore,
+    hasMore,
+    total,
+    error,
+    loadMore,
+    optimisticDelete,
+  } = useMinimalInfinite<Client>(
+    fetchPage,
+    {}, // No filters for clients - show all
+    { pageSize: 40 } // Optimized for medium complexity
+  );
 
-  const table = useReactTable({
-    data: mappedClients || [],
-    columns,
-    pageCount: clients?.pages,
-    state: {
-      columnFilters,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
+  // Map clients to include fullName for display
+  const mappedClients = useMemo(() => {
+    return clients.map((client) => ({
+      ...client,
+      fullName: `${client.firstName} ${client.lastName}`,
+    }));
+  }, [clients]);
+
+  // Create columns with optimistic functions
+  const columnsWithActions: ColumnDef<Client & { fullName: string }>[] =
+    useMemo(() => {
+      return columns.map((col) => {
+        if (col.id === "actions") {
+          return {
+            ...col,
+            cell: ({ row }) => {
+              const client = row.original;
+              return (
+                <ClientActions
+                  client={client}
+                  onOptimisticDelete={optimisticDelete}
+                />
+              );
+            },
+          };
+        }
+        return col;
+      });
+    }, [optimisticDelete]);
 
   return (
-    <div className="flex flex-col gap-y-6.5">
+    <div className="h-full flex flex-col gap-y-6">
       {/* Table */}
-      <CustomTable
-        columns={columns}
-        table={table}
-        loading={loading}
-        fetching={fetchingClients}
-        withPagination
-        // onRowClick={(row) => router.push(`/clientes/${row.id}`)}
-      />
+      <div className="flex-1 min-h-0">
+        <SimpleInfiniteTable
+          columns={columnsWithActions}
+          data={mappedClients}
+          loading={loading}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          total={total}
+          bottomLeftComponent={
+            <div className="flex items-center gap-4">
+              {error && (
+                <div className="text-red-500 text-sm">Error cargando datos</div>
+              )}
+            </div>
+          }
+        />
+      </div>
     </div>
   );
 }

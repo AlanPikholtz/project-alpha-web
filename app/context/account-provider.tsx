@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useMemo,
+  useEffect,
+} from "react";
 import { useGetAccountsQuery } from "../lib/accounts/api";
 import { Account } from "../lib/accounts/types";
 
@@ -28,15 +35,28 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
     null
   );
 
+  // Auto-select first account when accounts load and no account is selected
+  useEffect(() => {
+    const accountsList = accounts?.data || [];
+    if (accountsList.length > 0 && selectedAccountId === null) {
+      console.log("🎯 Auto-selecting first account:", accountsList[0].name);
+      setSelectedAccountId(accountsList[0].id);
+    }
+  }, [accounts?.data, selectedAccountId]);
+
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      accounts: accounts?.data || [],
+      loadingAccounts: loadingAccounts,
+      selectedAccountId,
+      setSelectedAccountId,
+    }),
+    [accounts?.data, loadingAccounts, selectedAccountId]
+  );
+
   return (
-    <AccountContext.Provider
-      value={{
-        accounts: accounts?.data || [],
-        loadingAccounts: loadingAccounts,
-        selectedAccountId,
-        setSelectedAccountId,
-      }}
-    >
+    <AccountContext.Provider value={contextValue}>
       {children}
     </AccountContext.Provider>
   );

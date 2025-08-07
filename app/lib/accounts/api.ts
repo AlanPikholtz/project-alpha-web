@@ -73,6 +73,7 @@ export const accountsApi = api
 export const {
   // Accounts
   useGetAccountsQuery,
+  useLazyGetAccountsQuery,
   // Account
   useGetAccountByIdQuery,
   // New Account

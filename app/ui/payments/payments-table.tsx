@@ -1,17 +1,18 @@
-import { Payment } from "@/app/lib/payments/types";
+"use client";
+
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+
+import SimpleInfiniteTable from "../simple-infinite-table";
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import React, { useEffect, useState } from "react";
-import CustomTable from "../custom-table";
-import { useGetPaymentsQuery } from "@/app/lib/payments/api";
+  useMinimalInfinite,
+  FetchPageFn,
+} from "@/app/hooks/use-minimal-infinite";
+import { useLazyGetPaymentsQuery } from "@/app/lib/payments/api";
+import { Payment } from "@/app/lib/payments/types";
+import { formatDate, formatNumber } from "@/app/lib/helpers";
 import _ from "lodash";
 import { paymentMethodToString } from "@/app/lib/payments/helpers";
-import { formatDate, formatNumber } from "@/app/lib/helpers";
 import DeletePaymentDialog from "./delete-payment-dialog";
 
 const columns: ColumnDef<Payment>[] = [
@@ -43,10 +44,7 @@ const columns: ColumnDef<Payment>[] = [
   {
     id: "actions",
     header: "Acciones",
-    cell: ({ row }) => {
-      const payment = row.original;
-      return <DeletePaymentDialog payment={payment} />;
-    },
+    cell: () => null, // Will be overridden by columnsWithActions
     meta: { className: "w-24 text-center" },
     enableSorting: false,
   },
@@ -60,84 +58,92 @@ export default function PaymentsTable({
   // Filters
   const [debouncedAmountFilter, setDebouncedAmountFilter] =
     useState<string>("");
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
 
-  // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
-
-  const {
-    data: payments,
-    isLoading: loadingPayments,
-    isFetching: fetchingPayments,
-  } = useGetPaymentsQuery(
-    {
-      ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
-      page: pageIndex + 1, // Current page
-      limit: pageSize, // Amount of pages
-    },
-    {
-      refetchOnFocus: true,
-      refetchOnMountOrArgChange: true,
-      refetchOnReconnect: true,
-    }
-  );
-
-  const table = useReactTable({
-    data: payments?.data || [],
-    columns,
-    pageCount: payments?.pages,
-    state: {
-      columnFilters,
-
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
-    manualPagination: true,
-    manualFiltering: true,
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newPagination.pageIndex);
-      setPageSize(newPagination.pageSize);
-    },
-  });
-
-  // Amount Search
+  // Amount Search debouncing
   useEffect(() => {
     const handler = _.debounce((value: string) => {
       setDebouncedAmountFilter(value);
-    }, 400); // 400ms debounce
+    }, 400);
 
     handler(amountFilter);
 
-    // Cancelar debounce si el componente se desmonta o cambia
     return () => {
       handler.cancel();
     };
   }, [amountFilter]);
 
-  // Reset page on filters change
-  useEffect(() => {
-    setPageIndex(0);
-  }, [debouncedAmountFilter]);
+  // Create lazy query trigger
+  const [fetchPayments] = useLazyGetPaymentsQuery();
+
+  // Create fetchPage function
+  const fetchPage: FetchPageFn<Payment> = useCallback(
+    async (params) => {
+      const result = await fetchPayments({
+        page: params.page,
+        limit: params.limit,
+        ...(params.amount ? { amount: params.amount as number } : {}),
+      }).unwrap();
+
+      return result;
+    },
+    [fetchPayments]
+  );
+
+  // Use the new React Native-style infinite hook
+  const {
+    data: payments,
+    loading,
+    loadingMore,
+    hasMore,
+    total,
+    error,
+    loadMore,
+    optimisticDelete,
+  } = useMinimalInfinite<Payment>(
+    fetchPage,
+    {
+      ...(debouncedAmountFilter !== "" && { amount: +debouncedAmountFilter }),
+    },
+    { pageSize: 60 }
+  ); // Optimized for simple table structure
+
+  // Create columns with optimistic delete
+  const columnsWithActions: ColumnDef<Payment>[] = useMemo(() => {
+    return columns.map((col) => {
+      if (col.id === "actions") {
+        return {
+          ...col,
+          cell: ({ row }) => {
+            const payment = row.original;
+            return (
+              <DeletePaymentDialog
+                payment={payment}
+                onOptimisticDelete={optimisticDelete}
+              />
+            );
+          },
+        };
+      }
+      return col;
+    });
+  }, [optimisticDelete]);
 
   return (
-    <CustomTable
-      columns={columns}
-      table={table}
-      loading={loadingPayments}
-      fetching={fetchingPayments}
-      withPagination
+    <SimpleInfiniteTable
+      columns={columnsWithActions}
+      data={payments}
+      loading={loading}
+      loadingMore={loadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
+      total={total}
+      bottomLeftComponent={
+        <div className="flex items-center gap-4">
+          {error && (
+            <div className="text-red-500 text-sm">Error cargando datos</div>
+          )}
+        </div>
+      }
     />
   );
 }

@@ -112,8 +112,8 @@ export default function SettingsDashboard() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-y-4 h-full">
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col gap-y-4 overflow-hidden">
+      <div className="flex items-center justify-between flex-shrink-0">
         <SingleDatePicker
           monthOnly
           date={date}
@@ -131,8 +131,8 @@ export default function SettingsDashboard() {
 
       {(loadingMetrics || fetchingMetrics) && <MetricsSkeleton />}
       {!loadingMetrics && !fetchingMetrics && (
-        <div className="flex-1 flex flex-col gap-y-10 justify-center">
-          <div className="flex items-center gap-x-4">
+        <div className="flex-1 flex flex-col gap-y-10 justify-center min-h-0">
+          <div className="flex items-center gap-x-4 flex-shrink-0">
             <MetricCard
               title="Clientes totales"
               value={formatNumber(+(metrics?.totalClients || 0))}
@@ -161,7 +161,7 @@ export default function SettingsDashboard() {
             />
           </div>
 
-          <div className="flex  items-center gap-x-4 h-full">
+          <div className="flex items-center gap-x-4 flex-1 min-h-0">
             <ClientsPerAcconut data={metrics?.clientsPerAccount} />
             <DepositsPerClient data={metrics?.depositsPerClient} />
             <CommissionsPerClient data={metrics?.commissionsPerClient} />
