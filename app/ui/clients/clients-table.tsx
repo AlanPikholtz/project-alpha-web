@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useCallback, useMemo } from "react";
 
-import SimpleInfiniteTable from "../simple-infinite-table";
 import {
-  useMinimalInfinite,
   FetchPageFn,
+  useMinimalInfinite,
 } from "@/app/hooks/use-minimal-infinite";
 import { useLazyGetClientsQuery } from "@/app/lib/clients/api";
 import { Client } from "@/app/lib/clients/types";
-import ClientActions from "./client-actions";
 import { formatNumber } from "@/app/lib/helpers";
+import SimpleInfiniteTable from "../simple-infinite-table";
+import ClientActions from "./client-actions";
 
 const columns: ColumnDef<Client & { fullName: string }>[] = [
   {
@@ -81,7 +81,7 @@ export default function ClientsTable() {
   } = useMinimalInfinite<Client>(
     fetchPage,
     {}, // No filters for clients - show all
-    { pageSize: 40 } // Optimized for medium complexity
+    { pageSize: 100 } // Optimized for medium complexity
   );
 
   // Map clients to include fullName for display
